@@ -107,7 +107,7 @@ async function jsonResponse(response) {
   }
 }
 
-export function createGitHubStore(env, fetcher = fetch) {
+export function createGitHubStore(env, fetcher = (url, options) => fetch(url, options)) {
   const { appId, installationId, pem, repository, repoName, encryptionKey } = config(env);
   const identity = `${appId}/${installationId}/${repository.toLowerCase()}`;
   const repoPath = `/repos/${repository}`;
@@ -152,7 +152,7 @@ export function createGitHubStore(env, fetcher = fetch) {
     try {
       return await fetcher(`${API_URL}${path}`, {
         method,
-        redirect: 'error',
+        redirect: 'manual',
         headers: {
           accept: 'application/vnd.github+json',
           authorization: `Bearer ${token}`,

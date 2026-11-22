@@ -825,6 +825,7 @@ cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 - Publish the static game and builder at `klarbase.brclio.com` with production builds from GitHub `main`.
 - Use the Brclio origin in discovery assets and keep API paths out of the SPA fallback.
 - Add GitHub login, account-isolated cloud saves, comments and online isle sharing on Cloudflare Free. Store data as encrypted records in the private Brclio GitHub data repository and verify publishes in an internal Durable Object.
+- Use manual outbound redirect handling on Workers for authenticated GitHub calls. Reject redirect responses before consuming data.
 
 ### 2026-11-19 (ah) — Integration: review fixes, local-DB route checks, PRs
 - **How this release was built:** an Opus plan, then six Sonnet agents in parallel worktrees (A repo · B comments ·

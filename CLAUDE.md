@@ -59,7 +59,7 @@ If you changed **rules, the data model, content, infra, or the roadmap**:
   `tools/check-isles.mjs` + `core/src/isle/contrib.js`. Don't loosen a rule to let one isle in.
 - **Solutions are earned** (signed in, cleared, or active-play effort). Don't add new places
   that print a route to anonymous players.
-- **Playing and building are open to everyone.** Players sign in with GitHub to sync progress, publish online or comment.
+- **Playing and building are open to everyone.** Players sign in with an email account or GitHub to sync progress, publish online or comment.
 - **Art is procedural.** No model, texture or audio files — keep isles a few KB of text.
 
 ## Deployment rules

@@ -13,6 +13,13 @@ import { progressLimiter } from '../middleware.js';
 
 export const progress = Router();
 progress.use(requireAuth);
+progress.use((req, res, next) => {
+  const expected = req.get('X-Klarbase-Account');
+  if((expected !== undefined || req.user.id.startsWith('email_')) && expected !== req.user.id) {
+    return res.status(409).json({ error:'account changed' });
+  }
+  next();
+});
 
 progress.get('/', async (req, res, next) => {
   try {

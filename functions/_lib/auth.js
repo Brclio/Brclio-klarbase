@@ -1,4 +1,5 @@
-import { json, readJson } from './http.js';
+import { HttpError, json, readJson } from './http.js';
+import { prepareEmail } from './email-auth.js';
 
 const API = '/api/auth';
 const OAUTH_AGE = 10 * 60;
@@ -94,11 +95,19 @@ export function createAuth(env, store) {
   const origin = new URL(env.AUTH_ORIGIN || 'https://klarbase.brclio.com').origin;
   const secure = origin.startsWith('https:');
   if(!secure && !/^http:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?$/.test(origin)) throw new Error('Invalid Klarbase auth origin');
-  const providers = Object.entries(PROVIDERS).filter(([name]) => env[`AUTH_${name.toUpperCase()}_CLIENT_ID`] && env[`AUTH_${name.toUpperCase()}_CLIENT_SECRET`]).map(([name]) => name);
-  const configured = providers.length > 0;
+  const social = Object.entries(PROVIDERS).filter(([name]) => env[`AUTH_${name.toUpperCase()}_CLIENT_ID`] && env[`AUTH_${name.toUpperCase()}_CLIENT_SECRET`]).map(([name]) => name);
+  const emailEnabled = !!(env.ISLE_VERIFIER && env.GITHUB_DATA_ENCRYPTION_KEY);
+  const providers = emailEnabled ? [...social, 'email'] : social;
   const cookieName = key => (secure ? '__Host-' : '') + 'klarbase-' + key;
   const cookie = (key, value, ttl) => `${cookieName(key)}=${value}; Path=/; Max-Age=${ttl}; HttpOnly; SameSite=Lax${secure ? '; Secure' : ''}`;
   const callback = name => origin + API + '/callback/' + name;
+
+  async function newSession(id) {
+    const token = random();
+    const path = sessionPath(id, await hexDigest(token));
+    const expiresAt = new Date(Date.now() + SESSION_AGE * 1000).toISOString();
+    return { cookie:cookie('session', id + '.' + token, SESSION_AGE), save:tx => tx.set(path, { userId:id, expiresAt }) };
+  }
 
   async function sessionFile(request) {
     if(new URL(request.url).origin !== origin) return null;
@@ -119,7 +128,7 @@ export function createAuth(env, store) {
   async function start(request) {
     const body = await readJson(request, 1024);
     const name = body.provider;
-    if(!providers.includes(name)) return failure('Sign-in provider unavailable', 400);
+    if(!social.includes(name)) return failure('Sign-in provider unavailable', 400);
     const state = random();
     const verifier = random();
     const returnTo = safeReturn(body.callbackURL, origin);
@@ -139,7 +148,7 @@ export function createAuth(env, store) {
     const flow = decodeState(readCookie(request, cookieName('oauth')));
     const expire = cookie('oauth', '', 0);
     const fail = (status = 'failed') => redirect(`/?sign-in=${status}`, [expire]);
-    if(!providers.includes(name) || flow?.name !== name || !(flow.expires > Date.now()) || !TOKEN.test(flow.state || '') ||
+    if(!social.includes(name) || flow?.name !== name || !(flow.expires > Date.now()) || !TOKEN.test(flow.state || '') ||
       !TOKEN.test(flow.verifier || '') || url.searchParams.get('state') !== flow.state) return fail();
     if(url.searchParams.has('error')) return fail(url.searchParams.get('error') === 'access_denied' ? 'cancelled' : 'failed');
     const code = url.searchParams.get('code');
@@ -173,20 +182,44 @@ export function createAuth(env, store) {
     const id = await hexDigest(name + ':' + subject);
     const displayName = String(provider.name(profile) || 'Klarbase player').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 80) || 'Klarbase player';
     const image = avatarUrl(provider.image(profile), provider.avatarHost);
-    const token = random();
-    const path = sessionPath(id, await hexDigest(token));
-    const expiresAt = new Date(Date.now() + SESSION_AGE * 1000).toISOString();
+    const session = await newSession(id);
     try {
       await store.mutate(async tx => {
         const previous = await tx.get(profilePath(id));
         if(!previous || previous.name !== displayName || previous.image !== image) tx.set(profilePath(id), { id, name:displayName, image });
-        tx.set(path, { userId:id, expiresAt });
+        session.save(tx);
       });
     } catch(error){
       console.warn('Klarbase sign-in storage unavailable', { status:error?.status });
       return fail();
     }
-    return redirect(safeReturn(flow.returnTo, origin), [expire, cookie('session', id + '.' + token, SESSION_AGE)]);
+    return redirect(safeReturn(flow.returnTo, origin), [expire, session.cookie]);
+  }
+
+  async function emailAccount(request, register) {
+    if(!emailEnabled) return failure('Email sign-in temporarily unavailable', 503);
+    const { id, name, passwordWork } = await prepareEmail(request, env, register);
+    const path = userDir(id) + '/credential.json';
+    const previous = register ? null : await store.get(path);
+    const proof = await passwordWork(previous || null);
+    if(!register && (!previous || !proof.valid)) return failure('Invalid email or password', 401);
+    const session = await newSession(id);
+    const user = await store.mutate(async tx => {
+      const current = await tx.get(path);
+      let profile = await tx.get(profilePath(id));
+      if(register) {
+        if(current || profile) throw new HttpError(422, 'Account already exists');
+        tx.set(path, proof.credential);
+        profile = { id, name, image:null };
+        tx.set(profilePath(id), profile);
+      } else if(!current || current.scheme !== previous.scheme || current.salt !== previous.salt || current.hash !== previous.hash || profile?.id !== id) {
+        // A concurrent removal or password change invalidates the earlier verification.
+        throw new HttpError(401, 'Invalid email or password');
+      }
+      session.save(tx);
+      return { id, name:profile.name, image:profile.image };
+    });
+    return response({ user }, 200, session.cookie);
   }
 
   async function handle(request) {
@@ -195,6 +228,13 @@ export function createAuth(env, store) {
     if(request.method === 'GET' && endpoint === '/providers') return response({ providers:url.origin === origin ? providers : [] });
     if(url.origin !== origin) return failure('Sign-in is available on the production hostname', 403);
     if(request.method === 'POST' && request.headers.get('origin') !== origin) return failure('Origin not allowed', 403);
+    if(request.method === 'POST' && (endpoint === '/sign-up/email' || endpoint === '/sign-in/email')) {
+      try { return await emailAccount(request, endpoint === '/sign-up/email'); }
+      catch(error) {
+        if(error instanceof HttpError) return failure(error.message, error.status);
+        throw error;
+      }
+    }
     if(request.method === 'POST' && endpoint === '/sign-in/social') return start(request);
     if(request.method === 'GET' && endpoint.startsWith('/callback/')) return finish(request, url, endpoint.slice('/callback/'.length));
     if(request.method === 'GET' && endpoint === '/get-session') return response(await readSession(request));
@@ -207,5 +247,5 @@ export function createAuth(env, store) {
   }
 
   const getUser = async request => (await readSession(request))?.user || null;
-  return { handle, getUser, configured };
+  return { handle, getUser, configured:providers.length > 0 };
 }

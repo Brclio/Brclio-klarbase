@@ -5,7 +5,7 @@ import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { authHandler } from './auth.js';
+import { authHandler, signInProviders } from './auth.js';
 import { puzzles } from './routes/puzzles.js';
 import { world } from './routes/world.js';
 import { stats } from './routes/stats.js';
@@ -25,6 +25,7 @@ app.use((req, res, next) => req.hostname.startsWith('www.')
   ? res.redirect(301, `https://${req.hostname.slice(4)}${req.originalUrl}`) : next());
 
 // better-auth needs the RAW body — mount it before express.json()
+app.get('/api/auth/providers', (_req, res) => res.set('Cache-Control', 'no-store').json({ providers:signInProviders }));
 app.all('/api/auth/*', authHandler);
 
 // hook(analytics): PostHog EU proxy — raw body, IP and cookies stripped; must precede express.json

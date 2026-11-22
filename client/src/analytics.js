@@ -24,7 +24,7 @@ const CATALOGUE = {
   builder_open:      { props:[],                                        about:'You opened the isle builder.' },
   share_online:      { props:[],                                        about:'You shared an isle online.' },
   propose_github:    { props:[],                                        about:'You chose to propose an isle on GitHub (the prefilled pull request link, or the file download).' },
-  sign_in:           { props:['provider'],                              about:'You signed in (GitHub or Google).' },
+  sign_in:           { props:['provider'],                              about:'You signed in with email, GitHub or Google.' },
   comment_post:      { props:[],                                        about:'You posted a comment on an isle.' },
   map_enter:         { props:[],                                        about:'You opened the world map.' },
   map_shrine_enter:  { props:['kind'],                                  about:'You walked into a shrine on the map (which kind).' },
@@ -33,7 +33,7 @@ const CATALOGUE = {
 export const EVENTS = Object.entries(CATALOGUE).map(([name, e]) => ({ name, props:e.props, description:e.about }));
 
 const SOURCES = ['official', 'community', 'daily', 'online', 'wild'];
-const PROVIDERS = ['github', 'google'];
+const PROVIDERS = ['email', 'github', 'google'];
 const HASH = /[0-9a-f]{64}/g;
 
 // Keep the route's shape, drop anything that identifies a specific shared isle.

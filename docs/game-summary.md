@@ -4,6 +4,6 @@
 
 **Tiny floating isles · clever little paths.** Guide Pip across 56 official isles in nine chapters, take on the Daily Isle, or build and share a puzzle of your own. Each isle is checked by the solver. Play in Chinese or English.
 
-黄家宝（AI悦创，AndersonHJB）维护 Brclio 版本。游戏运行于 Cloudflare，玩家可通过 GitHub 登录并同步进度。
+黄家宝（AI悦创，AndersonHJB）维护 Brclio 版本。游戏运行于 Cloudflare，玩家可使用邮箱和密码注册，也可通过 GitHub 登录，然后在不同设备间同步进度。
 
 [开始游戏](https://klarbase.brclio.com) · [Brclio](https://brclio.com) · [AI悦创个人网站](https://bornforthis.cn) · [项目仓库与反馈](https://github.com/Brclio/Brclio-klarbase)

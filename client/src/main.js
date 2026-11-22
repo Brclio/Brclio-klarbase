@@ -606,8 +606,8 @@ function won(s){
   postPlay('clear', { moves:s.moves, ms:Math.round(s.time * 1000) }); attemptOpen = false;
   // the main path skips side paths (Twist, Confluence); a daily has no "next"
   const next = e.index != null && !e.daily && !e.fromMap ? official.slice(e.index + 1).find(x => !x.side) : null;
-  const share = e.daily ? t(dailyShareText({ no:e.daily.no, moves:s.moves, par:e.par, stars }),
-    `Klarbase 每日浮岛 第 ${e.daily.no} 期 · ${s.moves} 步${e.par ? `（最少 ${e.par} 步）` : ''} · ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}`) : null;
+  const share = e.daily ? t('Brclio ' + dailyShareText({ no:e.daily.no, moves:s.moves, par:e.par, stars }),
+    `Brclio Klarbase 每日浮岛 第 ${e.daily.no} 期 · ${s.moves} 步${e.par ? `（最少 ${e.par} 步）` : ''} · ${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}`) : null;
   const shareUrl = location.origin + (e.archived ? '/daily/' + e.daily.date : '/daily');
   modal.open(`<h2>${e.daily ? t(`Daily #${e.daily.no} cleared!`, `每日浮岛 第 ${e.daily.no} 期通关！`) : t("Isle cleared!", "浮岛通关！")}</h2>
     <div class="big-stars">${[0, 1, 2].map(i => `<span class="${i < stars ? 'lit' : ''}" style="animation-delay:${0.15 + i * 0.18}s">★</span>`).join('')}</div>

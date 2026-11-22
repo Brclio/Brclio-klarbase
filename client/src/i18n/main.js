@@ -99,8 +99,8 @@ const help = {
     "<b>继续探索</b>，移动时长和步数达到下方目标即可解锁。",
   ],
   feedback: [
-    "Ideas, bugs, an isle that felt unfair — it all goes straight to the maker.",
-    "有想法、遇到故障，或是觉得某关不太公平？写下来，开发者会收到你的反馈。",
+    "Tell the Brclio Klarbase maintainer about an idea, a bug, or an isle that felt unfair.",
+    "有想法、遇到故障，或是觉得某关不太公平？写给 Brclio Klarbase 维护者。",
   ],
 };
 export const helpText = key => t(...help[key]);

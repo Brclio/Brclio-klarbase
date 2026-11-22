@@ -1,15 +1,9 @@
-# Game summary — for klarbase.dev
+# Brclio Klarbase
 
-**Tagline:** *Tiny floating isles · clever little paths.*
+**小小浮岛，步步有巧思。** 在 Brclio Klarbase 里，你可以带皮普穿过浮岛，把木箱推入水中铺路，踩上冰面滑到对岸，或拉动拉杆升起吊桥。游戏收录 9 个章节、56 座官方浮岛，还有每日挑战与浮岛建造器。首次打开使用简体中文，可以随时切换英文。
 
-**Paragraph:**
+**Tiny floating isles · clever little paths.** Guide Pip across 56 official isles in nine chapters, take on the Daily Isle, or build and share a puzzle of your own. Each isle is checked by the solver. Play in Chinese or English.
 
-Klarbase is a cozy puzzle game of floating isles. Guide Pip — a round little sprout spirit in
-a scarf — across tiny dioramas drifting above the clouds: push crates into springs to make
-bridges, slide across glacier ice, pull levers that raise and sink bridges, and step through
-arches that carry you across the sky. One hop per key, no timers unless you want them, and
-every isle checked by a solver so it's always fair. Play 24 hand-made isles across jungle,
-oasis, lagoon, rooftop and summit — then build your own, share it with a link, or add it to
-the game on GitHub with your name on it.
+黄家宝（AI悦创，AndersonHJB）维护 Brclio 版本。游戏运行于 Cloudflare，玩家可通过 GitHub 登录并同步进度。
 
-*(Copy-paste ready for the landing page and store listings.)*
+[开始游戏](https://klarbase.brclio.com) · [Brclio](https://brclio.com) · [AI悦创个人网站](https://bornforthis.cn) · [项目仓库与反馈](https://github.com/Brclio/Brclio-klarbase)

@@ -1,30 +1,21 @@
-// Licences & credits. Library licences were read from each package's package.json
-// (node_modules, versions as pinned in this release) — re-check when dependencies change.
-import { BRCLIO_DEPLOYMENT } from '../deployment.js';
-import { UPDATED, REPO, esc, updatedLine, otherPages } from './shared.js';
-import { listDependencies } from './dependencies.js';
+import { REPO, updatedLine, otherPages } from './shared.js';
+import { brandAttribution, listDependencies } from './dependencies.js';
 
 export const title = 'Licences';
-export const updated = UPDATED;
-
 export const html = () => `
-${updatedLine(UPDATED)}
-<h3>Klarbase</h3>
-<p>The game, its engine, the tools and the isles in the repository are released under the <a href="${esc(REPO)}/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. Isles contributed by players are released under the same licence and credit their makers. Original project by <a href="https://github.com/TanmoyP/klarbase" target="_blank" rel="noopener">TanmoyP and Klarbase contributors</a>.</p>
-
-<h3>Libraries sent to your browser</h3>
+${updatedLine()}
+<h3>Brclio Klarbase</h3>
+<p>Brclio maintains this version of the game. The code, tools and isles in the <a href="${REPO}" target="_blank" rel="noopener">Brclio repository</a> are released under the MIT License. Community isles credit their makers.</p>
+<p>The original game carries the notice “Copyright (c) 2026 TanmoyP and Klarbase contributors”. The <a href="${REPO}/blob/main/LICENSE" target="_blank" rel="noopener">project licence</a> includes the copyright and permission notices to retain when distributing copies.</p>
+<h3>Brclio brand mark</h3>
+<p>The site icons and share preview feature the mark from the <a href="${brandAttribution.kit}" target="_blank" rel="noopener">official Brclio brand kit</a>. Visual direction based on the <a href="${brandAttribution.design}" target="_blank" rel="noopener">Esther Design System</a>, © 2026 ESTHER不二 (esthersjw), licensed under <a href="${brandAttribution.licence}" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.</p>
+<p>When reusing visual material covered by this licence, retain the credit and licence link, identify changes, limit use to noncommercial purposes and share adaptations under the same licence. Use of the Brclio name and mark as brand identifiers is managed separately.</p>
+<h3>Libraries</h3>
+<p>The browser client includes the following libraries. Optional libraries load when the associated feature is enabled.</p>
 ${listDependencies(true)}
-
-<h3>${BRCLIO_DEPLOYMENT ? 'Libraries in the upstream Node.js server' : 'Libraries on the server'}</h3>
+<p>The repository also includes server components that use:</p>
 ${listDependencies(false)}
-<p>Each of these has its own dependencies, listed with their licences in the repository's lock file.</p>
-
-<h3>Inspiration</h3>
-<p>Klarbase was inspired by <i>papertrails</i> by xikhar (MIT licensed). We took ideas and techniques only — no code or assets.</p>
-
-<h3>Art and sound</h3>
-<p>All art and audio are generated in code. There are no model, texture, image or audio files.</p>
-
-<h3>Fonts</h3>
-<p>Fredoka and Nunito, both under the SIL Open Font License 1.1, are bundled with the game (via the @fontsource packages) and served by this site.</p>
+<p>Additional dependency licences are recorded in the <a href="${REPO}/blob/main/package-lock.json" target="_blank" rel="noopener">package lock file</a>.</p>
+<h3>Fonts, art and sound</h3>
+<p>Fredoka and Nunito are bundled via @fontsource and served by this site under the SIL Open Font License 1.1. The game generates its scenery, characters and sound effects in code.</p>
 ${otherPages()}`;

@@ -1,7 +1,7 @@
 {
   "lang": "en",
-  "name": "Klarbase — tiny isles, clever paths",
-  "short_name": "Klarbase",
+  "name": "Brclio Klarbase — tiny isles, clever paths",
+  "short_name": "Brclio Klarbase",
   "description": "A cozy browser puzzle game of floating isles. Play, build your own, and share them.",
   "start_url": "/",
   "scope": "/",
@@ -9,5 +9,8 @@
   "background_color": "#cfe6f2",
   "theme_color": "#cfe6f2",
   "categories": ["games", "entertainment"],
-  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+  "icons": [
+    { "src": "/brclio-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/brclio-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
 }

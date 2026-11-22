@@ -1,5 +1,6 @@
+Contact: mailto:bornforthis@bornforthis.cn
 Contact: https://github.com/Brclio/Brclio-klarbase/security/advisories/new
 Policy: https://github.com/Brclio/Brclio-klarbase/blob/main/SECURITY.md
 Expires: 2027-10-25T00:00:00.000Z
-Preferred-Languages: en
+Preferred-Languages: zh-CN, en
 Canonical: https://klarbase.brclio.com/.well-known/security.txt

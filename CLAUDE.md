@@ -1,14 +1,13 @@
-# Klarbase — Claude Code Project Instructions
+# Brclio Klarbase — Claude Code Project Instructions
 
 > Read on every session start. These OVERRIDE default behaviour.
-> Start sessions from the **klarbase** folder (not another project), so tools, memory and
-> launch configs belong to Klarbase alone.
+> Start sessions in the **Brclio-klarbase** repository. See [AGENTS.md](AGENTS.md) for project ownership and [DEPLOYMENT.md](DEPLOYMENT.md) for Cloudflare production.
 
 ---
 
 ## 🔴 CRITICAL SAFETY RULES — READ FIRST
 
-1. **`DATABASE_URL` / `DIRECT_URL` in production point at the live Neon database.** Never run migrations, `DROP`, `DELETE`, `TRUNCATE`, seeds or destructive SQL against them. Local dev uses the docker-compose Postgres (`postgresql://klar:klar@localhost:5432/klarbase`).
+1. **Protect live player data.** Production stores encrypted records in the private `BrclioData/Brclio-klarbase-Data` repository. Preserve the data encryption key and keep GitHub credentials in Cloudflare secrets. Run test writes against fixtures. For optional Express/PostgreSQL development use the local Docker Compose database. Never run migrations, destructive SQL or seeds against a live database.
 2. **Never `git push --force` or `git reset --hard`** on any branch.
 3. **Never push directly to `main`.** Feature branch + PR.
 4. **Never add a tile type or rule without a schema decision.** The tile vocabulary and the 7 rules are the game's constitution. A new one means: `rules.js` + solver + tests + every official isle re-verified + art + builder tool + `isles/README.md` — together, priced as such.
@@ -21,12 +20,10 @@
 
 A cozy browser puzzle game of floating **isles**: turn-based grid puzzles (stairs, ledges,
 crates, ice, plates & gates, levers & bridges, keys & doors, portal arches) played by **Pip**.
-Play 24 official isles, community isles merged on GitHub, or isles shared online; build your
+Play 56 official isles, community isles merged on GitHub, or isles shared online; build your
 own. Every isle is solver-verified. Open source; contributors are credited.
 
-**Stack:** npm workspaces — `@klar/core` (pure, zero deps), `@klar/client` (Vite + three.js,
-all procedural art/audio), `@klar/server` (Express 4 + Prisma + better-auth). Neon Postgres.
-Single Railway service + Cloudflare.
+**Production stack.** `@klar/core` supplies the shared rules. The Vite + three.js client and the Pages Functions API run on Cloudflare Free. An internal Durable Object verifies online submissions. A repository-scoped GitHub App writes encrypted files to the private data repository. The optional Express/PostgreSQL implementation is in `@klar/server`.
 
 **Engineering source of truth: [`ENGINEERING.md`](ENGINEERING.md).** Format & rules for
 players/contributors/bots: [`isles/README.md`](isles/README.md). Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -62,16 +59,14 @@ If you changed **rules, the data model, content, infra, or the roadmap**:
   `tools/check-isles.mjs` + `core/src/isle/contrib.js`. Don't loosen a rule to let one isle in.
 - **Solutions are earned** (signed in, cleared, or active-play effort). Don't add new places
   that print a route to anonymous players.
-- **Playing and building are open to everyone.** Only sharing online needs login.
+- **Playing and building are open to everyone.** Players sign in with GitHub to sync progress, publish online or comment.
 - **Art is procedural.** No model, texture or audio files — keep isles a few KB of text.
 
-## Production rules (hard-won — detail in ENGINEERING.md §12)
+## Deployment rules
 
-- **better-auth stays exact-pinned at `1.4.22`** (1.7 expects `Account.issuer` → OAuth 500).
-- **Deploy** is `railway up`; its `--ci` log stream can time out while the build still lands —
-  verify via the served bundle hash and `GET /api/health` → `{"ok":true}`.
-- Neon `DIRECT_URL` = pooled URL minus `-pooler`. OAuth callbacks must match `BETTER_AUTH_URL` exactly.
-- The Dockerfile must copy `isles/` — community isles are bundled at build time.
+- Merge reviewed changes to `main` in `Brclio/Brclio-klarbase`. Pages and Workers Builds deploy the client/API and verifier from that branch. Use `npm run build:pages` to check the production build locally.
+- Verify the deployed revision and JSON from `https://klarbase.brclio.com/api/health`. GitHub OAuth returns to `https://klarbase.brclio.com/api/auth/callback/github`. Keep production app credentials confined to the production project settings.
+- For the optional Express backend, keep better-auth pinned to `1.4.22` to match its Prisma schema and keep `isles/` in its Docker build.
 
 ## Code style
 
@@ -88,6 +83,7 @@ node tools/author.mjs            # render isles/official/ -> core/src/isle/offic
 npm run dev:client               # play + build at :5173 (no server needed)
 npm run dev:server               # API at :3000 (needs .env + docker compose up db -d)
 npm run check                    # syntax sanity
+npm run build:pages              # validate the Brclio production API and build the client
 ```
 
 ## Token discipline

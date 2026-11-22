@@ -4,7 +4,7 @@ labels: [isle-idea]
 body:
   - type: markdown
     attributes:
-      value: Want to build it yourself? See [CONTRIBUTING.md](https://github.com/TanmoyP/klarbase/blob/main/CONTRIBUTING.md). Ideas here stay within the existing tiles and rules.
+      value: Want to build it yourself? See [CONTRIBUTING.md](https://github.com/Brclio/Brclio-klarbase/blob/main/CONTRIBUTING.md). Ideas here stay within the existing tiles and rules.
   - type: textarea
     id: idea
     attributes:

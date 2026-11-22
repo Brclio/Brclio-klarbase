@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Ideas & questions
-    url: https://github.com/TanmoyP/klarbase/discussions
-    about: Open-ended ideas, questions and show-and-tell belong in Discussions.
-  - name: In-game feedback
-    url: https://klarbase.dev
-    about: No GitHub account? Use the "Send feedback" link under the title at klarbase.dev.
+  - name: Build or contribute an isle
+    url: https://github.com/Brclio/Brclio-klarbase/blob/main/CONTRIBUTING.md
+    about: Build your puzzle and submit it to the Brclio project.
+  - name: Report a security problem privately
+    url: https://github.com/Brclio/Brclio-klarbase/security/policy
+    about: Find the private reporting form and maintainer contact.

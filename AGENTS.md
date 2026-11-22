@@ -1,6 +1,12 @@
-# Klarbase — Agent Orientation
+# Brclio Klarbase — Agent Orientation
 
 > Read this first. Written for AI coding agents with no prior context.
+
+## Project identity
+
+The public code repository is [Brclio/Brclio-klarbase](https://github.com/Brclio/Brclio-klarbase). 黄家宝 (AI悦创, [@AndersonHJB](https://github.com/AndersonHJB)) maintains this edition. The running game supports Simplified Chinese and English. [Game](https://klarbase.brclio.com) · [Brand](https://brclio.com) · [Maintainer’s site](https://bornforthis.cn)
+
+TanmoyP and the Klarbase contributors authored the original game. Keep the MIT notice and the author recorded on each contributed isle.
 
 ## What this is
 Klarbase is a cozy, turn-based browser puzzle game of floating **isles**. The player guides
@@ -19,7 +25,9 @@ core/src/isle/   format.js (parse, hash) · rules.js (step) · solve.js (BFS) ·
 core/src/*.js    legacy voxel engine — only for the deferred world API
 core/test/       isles.mjs · run.mjs
 client/src/      main.js (app) · builder.js · game/{world,props,pip,session,audio,themes}.js
-server/src/      index.js · auth.js · routes/puzzles.js (isle gate) · routes/world.js (deferred)
+functions/       production Pages API · GitHub sign-in · encrypted per-record repository storage
+cloudflare/      verifier.js (internal Durable Object) · wrangler.toml
+server/src/      shared validation and optional Express/PostgreSQL service
 isles/community/ <github-user>/<id>.json — bundled into the client
 isles/official/  chapters.json + <chapter>/<id>.json — the official isles (source of truth)
 tools/           check-isles.mjs (PR gate) · author.mjs (render + verify official, --seed)
@@ -33,10 +41,11 @@ server gate all import it. Never reimplement a rule anywhere else.
 ## Commands
 ```bash
 npm install
-npm test                     # 192 isle assertions + 57 legacy
+npm test                     # game, contribution rules, language settings and Cloudflare routes
 node tools/check-isles.mjs   # community isles (what PRs run)
 node tools/author.mjs        # official isles + artifacts
 npm run dev:client           # :5173
+npm run build:pages          # checks the Pages API and builds the production client
 ```
 
 ## Conventions

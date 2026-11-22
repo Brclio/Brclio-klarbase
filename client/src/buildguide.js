@@ -210,7 +210,7 @@ export function buildGuideHtml(tools){
       ${section('检查、最少步数与试玩', `<ul><li>每次绘制后，求解器会自动检查最多 60,000 个状态。<b>深度检查</b>最多搜索 300,000 个状态。</li>
         <li><b>最少步数</b>是到达终点所需的最短步数。恰好达到即可获得 ★★★。</li><li>难度面板会显示求解器发现的陷阱与最短路线数，还会建议怎样让谜题更有挑战。</li><li><b>▶ 试玩</b>会打开当前草稿，修改会自动保存在本浏览器。</li></ul>`)}
       ${section('分享你的浮岛', `<ul>${STATIC_DEPLOYMENT ? '' : '<li><b>在线分享</b>需要先登录。在服务器验证浮岛后，你会得到一个人人都能游玩的链接。</li>'}
-        <li><b>提交到 GitHub</b>前请填写 GitHub 用户名以便署名。通过检查后，建造器会打开 GitHub，并预填 <code>isles/community/&lt;用户名&gt;/&lt;id&gt;.json</code>。在 GitHub 登录并创建合并请求，通过后你的浮岛会随游戏发布。太大的地图会下载为文件，供手动提交。</li>
+        <li><b>提交到 GitHub</b>前请填写 GitHub 用户名以便署名。通过检查后，建造器会打开 GitHub，并预填 <code>isles/community/&lt;用户名&gt;/&lt;id&gt;.json</code>。在 GitHub 登录并向 Brclio Klarbase 提交合并请求。合并后，你的浮岛会随游戏发布。太大的地图会下载为文件，供手动提交。</li>
         <li>社区浮岛的最短解至少要有 6 步，须用到实际机关，而且不能与已有浮岛重复。</li><li><b>浮岛代码</b>可以直接编辑或粘贴。<b>JSON</b> 用于导出，<b>导入</b>用于读取文件。</li></ul>`)}
       ${section('设计建议', `<ul><li><b>一岛一个点子。</b>找到最有趣的那一步，删去与它无关的布置。</li><li><b>先教，再变。</b>先让玩家学会一个机关，再让它以意外的方式派上用场。</li>
         <li><b>让直路失效。</b>如果径直走向星星就能过关，可以在途中设一道障碍。</li><li><b>小岛也精彩。</b>一个 5×5 的推箱谜题，可能比铺满 14×14 格的岛更耐玩。</li><li><b>像新玩家一样试玩。</b>暂时忘记答案。如果第一步只能靠猜，补一条线索。</li></ul>`)}
@@ -242,7 +242,7 @@ export function buildGuideHtml(tools){
       <li>The difficulty panel shows how the solver sees your isle, plus <b>make it harder</b> ideas (block the straight line, add risky steps, narrow it to one clever route).</li>
       <li><b>▶ Test it</b> plays your draft. Your draft is saved in this browser as you go.</li></ul>`)}
     ${section('Sharing your isle', `<ul>${STATIC_DEPLOYMENT ? '' : '<li><b>Share online</b>: sign in to get a link anyone can play. The server checks your isle before it goes live.</li>'}
-      <li><b>Propose on GitHub</b>: add your GitHub username for credit. If it passes every check, the builder opens GitHub with your isle already filled in at <code>isles/community/&lt;you&gt;/&lt;id&gt;.json</code>. Sign in there and GitHub opens the pull request for you. Merged isles ship in the game. (A very large map downloads as a file to add by hand instead.)</li>
+      <li><b>Propose on GitHub</b>: add your GitHub username for credit. If it passes every check, the builder opens GitHub with your isle already filled in at <code>isles/community/&lt;you&gt;/&lt;id&gt;.json</code>. Sign in there to open a pull request for Brclio Klarbase. Merged isles ship in the game. (A very large map downloads as a file to add by hand instead.)</li>
       <li>Community isles need a solution of at least 6 moves that uses a real mechanic (plain flat walking is rejected), and must not copy an existing isle.</li>
       <li><b>Isle code</b> is the same text format as the file. Edit it directly, or paste one in. <b>JSON</b> / <b>Import</b> save and load files.</li></ul>`)}
     ${section('Design tips', `<ul><li><b>One idea per isle.</b> Find the one surprising thing and cut everything that doesn’t serve it.</li>

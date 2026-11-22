@@ -1,4 +1,4 @@
-# Klarbase — every page is open to search engines and AI assistants.
+# Brclio Klarbase — every page is open to search engines and AI assistants.
 # /api/ is the game's JSON API, not pages.
 User-agent: *
 Allow: /

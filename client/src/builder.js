@@ -86,7 +86,7 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
       ${STATIC_DEPLOYMENT ? '' : '<button class="btn" id="bShare">☁ Share online</button>'}
     </div>
     <div class="field"><label>Isle code — the text format (edit me too)</label><textarea id="bCode" spellcheck="false"></textarea></div>
-    <div class="field"><label>${BRCLIO_DEPLOYMENT ? 'Contribute on GitHub' : 'Contribute to the official repo'}</label>
+    <div class="field"><label>Contribute to Brclio Klarbase</label>
       <input id="bAuthor" placeholder="your GitHub username">
       <div class="row-btns" style="margin-top:6px">
         <button class="btn small" id="bGithub">⇪ Propose on GitHub</button>

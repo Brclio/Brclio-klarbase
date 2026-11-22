@@ -1,7 +1,6 @@
-# Contributing to Klarbase
+# Contributing to Brclio Klarbase
 
-Thanks for wanting to build here! The easiest and most loved contribution is an
-**isle** — a small floating puzzle that everyone can play, credited to you.
+Contribute an **isle**, a small floating puzzle that everyone can play, to the Brclio edition. Your GitHub username stays attached to it. [Brclio repository](https://github.com/Brclio/Brclio-klarbase)
 
 ## Add your isle in 3 steps
 
@@ -16,7 +15,7 @@ Thanks for wanting to build here! The easiest and most loved contribution is an
    `solution`). Sign in if asked, press **Commit changes…** → **Propose changes** →
    **Create pull request**. GitHub forks the repo for you if you need one — no git, no install.
 3. **Wait for green.** The `isles` check runs automatically and posts a summary with your
-   isle's map, par and solution. When every check is green, the PR is mergeable — and once
+   isle's map, par and solution. When every check is green, the PR is ready for review. Once
    merged, your isle ships in the game's **Community** tab with “by @you” on it.
 
 ### By hand (or if your isle is too big to prefill)
@@ -33,7 +32,7 @@ and open a pull request that only touches your own folder.
 ## What the checks enforce (and why)
 
 Every pull request runs `node tools/check-isles.mjs`. It never runs any code you submit —
-it only reads your JSON and judges it with the game engine. A PR can't be merged until it passes.
+it only reads your JSON and judges it with the game engine. Wait for passing checks before merging.
 
 | Rule | Why |
 |---|---|
@@ -48,6 +47,8 @@ it only reads your JSON and judges it with the game engine. A PR can't be merged
 | Only known fields, file under 8 KB | keeps isles small and reviewable |
 
 ## The isle file
+
+This example is the existing community isle by TanmoyP. Use your own GitHub username when submitting your own work. [Sundial Steps](isles/community/TanmoyP/sundial-steps.json)
 
 ```json
 {
@@ -76,8 +77,7 @@ The full tile table and the rules of the game are in [`isles/README.md`](isles/R
 Optional fields: `hint`, `description`, `credit` (a display name if you'd like one), and
 `tier` — your gut call on difficulty: `breeze`, `easy`, `tricky`, `hard`, `fiendish` or `mythic`
 (pick it in the builder; it's exported with the file). Every isle shows a difficulty score from
-0 to 100: it starts from your tier (or the solver's estimate if you leave it out) and settles as
-people play. `tier` never changes the isle's identity, and a hard isle is never required —
+0 to 100. On the Brclio site the score uses your tier or the solver’s estimate. `tier` never changes the isle's identity, and a hard isle is never required —
 simple isles are welcome. The builder's **"make it harder"** hints are optional suggestions.
 
 **Maps (schemaVersion 6).** An isle can also be an *archipelago map*: up to 3 isles linked by
@@ -86,7 +86,7 @@ gateway arches, optionally with Sky Scales pans. Such a file has `"schemaVersion
 writes it for you when you add a second isle or a pan. Same checks, same limits. Format and
 rules: [`isles/README.md`](isles/README.md#archipelago-maps-schemaversion-6).
 
-Themes: `jungle`, `oasis`, `tropical`, `urban`, `mountain`.
+Available themes include `jungle`, `oasis`, `tropical`, `urban`, `mountain` and `night`.
 
 Daily Isles (`isles/daily/YYYY-MM-DD.json`) use the same format with a required `tier`; see
 [`isles/daily/README.md`](isles/daily/README.md).
@@ -117,8 +117,7 @@ module, so they can never disagree.
 
 ## For maintainers: making the checks required
 
-When the repository is public, add a branch ruleset for `main`
-(Settings → Rules → Rulesets → New branch ruleset):
+Maintainers can enforce the following settings on `main` under **Settings → Rules → Rulesets**.
 
 - **Require status checks to pass:** `engine`, `isles`, `sanity` (require branches to be up to date)
 - **Require a pull request before merging**, with **Require review from Code Owners**
@@ -129,7 +128,7 @@ When the repository is public, add a branch ruleset for `main`
 Or from the command line (run once, as a repo admin):
 
 ```bash
-gh api -X POST repos/TanmoyP/klarbase/rulesets --input .github/ruleset-main.json
+gh api -X POST repos/Brclio/Brclio-klarbase/rulesets --input .github/ruleset-main.json
 ```
 
 People listed in [`isles/MAINTAINERS`](isles/MAINTAINERS) may edit any community folder

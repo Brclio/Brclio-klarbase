@@ -1,6 +1,5 @@
-# Everything needs a maintainer's review by default — code, infra, docs, license.
-* @TanmoyP
+# Request a Brclio maintainer review for code, infrastructure, documentation and licensing.
+* @AndersonHJB
 
-# Community isles are the exception, on purpose: an isle-only PR becomes mergeable as soon as
-# the automated `isles` check passes. (Last match wins; a pattern with no owner = unowned.)
+# Community isles have no assigned code owner. The isles check validates the file and its author.
 /isles/community/

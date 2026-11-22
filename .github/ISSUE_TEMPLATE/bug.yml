@@ -26,4 +26,4 @@ body:
     id: isle
     attributes:
       label: Isle link
-      description: If it's about one isle, paste its link or name (e.g. https://klarbase.dev/i/...).
+      description: If it's about one isle, paste its link or name (e.g. https://klarbase.brclio.com/isle/first-steps).

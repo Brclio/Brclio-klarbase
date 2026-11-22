@@ -7,8 +7,8 @@ export const panelLabels = {
   'Start from':'从模板开始', '— keep my isle —':'— 保留当前浮岛 —', 'Fresh 7×7 meadow':'新建 7×7 草地',
   Size:'尺寸', 'right-click erases':'右键擦除', at:'位置', 'altitude ':'高度 ',
   '▶ Test it':'▶ 试玩', '✓ Deep check':'✓ 深度检查', '☁ Share online':'☁ 在线分享',
-  'Isle code — the text format (edit me too)':'浮岛代码 · 可直接编辑', 'Contribute on GitHub':'在 GitHub 投稿',
-  'Contribute to the official repo':'向官方仓库投稿', '⇪ Propose on GitHub':'⇪ 提交到 GitHub', '⤒ Import':'⤒ 导入',
+  'Isle code — the text format (edit me too)':'浮岛代码 · 可直接编辑', 'Contribute to Brclio Klarbase':'向 Brclio Klarbase 投稿',
+  '⇪ Propose on GitHub':'⇪ 提交到 GitHub', '⤒ Import':'⤒ 导入',
 };
 
 const errors = {

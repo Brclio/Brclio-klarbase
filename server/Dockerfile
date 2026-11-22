@@ -1,4 +1,4 @@
-# Single-service production image: builds the client, runs the server,
+# Optional self-hosted Node image: builds the client, runs the server,
 # which serves client/dist statically (same origin => no CORS).
 FROM node:20-alpine AS build
 WORKDIR /app
@@ -11,11 +11,8 @@ COPY core core
 COPY client client
 # community isles are bundled into the client at build time (import.meta.glob)
 COPY isles isles
-# VITE_* are baked into the client at build time; Railway passes service variables as build args.
+# Vite bakes this optional Node-deployment analytics setting into the client.
 ARG VITE_POSTHOG_KEY
-ARG VITE_IMPRINT_NAME
-ARG VITE_IMPRINT_ADDRESS
-ARG VITE_IMPRINT_EMAIL
 RUN npm run build -w @klar/client
 
 FROM node:20-alpine

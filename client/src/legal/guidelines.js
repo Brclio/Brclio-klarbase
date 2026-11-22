@@ -7,11 +7,11 @@ export const updated = UPDATED;
 
 export const html = () => STATIC_DEPLOYMENT ? `
 ${updatedLine('2026-11-22')}
-<p>Be respectful, keep feedback on topic and keep personal information out of public posts. Let other players discover solutions themselves. A spoiler-free hint is welcome.</p>
+<p>When contributing to Brclio Klarbase, be respectful, keep feedback on topic and keep personal information out of public posts. Let other players discover solutions themselves. A spoiler-free hint is welcome.</p>
 <p>To propose an isle or report a problem, follow the <a href="${esc(REPO)}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">contribution guide</a> or use the <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">GitHub issue tracker</a>.</p>
 ${otherPages()}` : `
 ${updatedLine(UPDATED)}
-<p>Klarbase is a cozy place. These few rules keep it that way. They apply to comments, isle names and anything else you share. They are part of the <a href="/terms" data-go="/terms">Terms of Use</a>.</p>
+<p>Brclio Klarbase is a place to share and solve puzzles. These few rules keep it that way. They apply to comments, isle names and anything else you share. They are part of the <a href="/terms" data-go="/terms">Terms of Use</a>.</p>
 
 <h3>Be kind</h3>
 <p>Say what you liked, or what could be clearer. No insults, harassment, hate or threats — about people or groups. Disagree about a puzzle, never about a person.</p>
@@ -29,5 +29,5 @@ ${updatedLine(UPDATED)}
 <p>If something breaks these rules, use the report button and move on. Three reports from different people hide an item automatically, and the maintainer looks at them. Don't answer in kind, and don't report in bad faith.</p>
 
 <h3>Consequences</h3>
-<p>Depending on how serious or repeated it is: content is hidden or removed, commenting or sharing is limited, or the account is closed. If you think a decision was wrong, write to ${contactLine()}.</p>
+<p>Depending on how serious or repeated it is: content is hidden or removed, commenting or sharing is limited, or the account is closed. If you think a decision was wrong, email AI悦创 at ${contactLine()}.</p>
 ${otherPages()}`;

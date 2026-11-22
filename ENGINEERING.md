@@ -1,13 +1,13 @@
-# Klarbase — Engineering Source of Truth (v2: Isles)
+# Brclio Klarbase — Engineering Source of Truth
 
 > **Tiny floating isles · clever little paths.**
 >
-> The single engineering source of truth for klarbase.dev — for the CTO, every developer,
-> and every AI agent. **v2 (2026-10-18)** replaced the camera-illusion "maquette" game with
+> Engineering reference for [Brclio Klarbase](https://klarbase.brclio.com), maintained by
+> 黄家宝 (AI悦创, [@AndersonHJB](https://github.com/AndersonHJB)). **v2 (2026-10-18)** replaced the camera-illusion "maquette" game with
 > cozy, turn-based **Isles**. The v1 document (voxel engine, illusion maths, the first deploy
 > day, sessions a–k) is preserved in [`docs/archive/v1/ENGINEERING-v1.md`](docs/archive/v1/ENGINEERING-v1.md).
 >
-> **Last updated:** 2026-11-22 · **Brclio repo:** `Brclio/Brclio-klarbase` (public, MIT) · **Upstream:** `TanmoyP/klarbase`
+> **Last updated:** 2026-11-22 · [Project repository](https://github.com/Brclio/Brclio-klarbase) · [Brclio](https://brclio.com) · [Maintainer](https://bornforthis.cn) · [Contact](mailto:bornforthis@bornforthis.cn)
 
 ## 0. How to use this document
 - It is **living**. Every session that changes rules, data, infra or the roadmap updates the
@@ -20,11 +20,11 @@
 
 ## 1. The game
 
-Klarbase is a cozy puzzle game of **isles**: tiny floating dioramas — terraced cliffs, roots,
+Brclio Klarbase is a cozy puzzle game of **isles**: tiny floating dioramas — terraced cliffs, roots,
 waterfalls spilling off the rim, glinting crystals — over a sea of cloud. You guide **Pip**, a
 round sprout spirit, one hop per key, to the glowing star. Two loops, one engine:
 
-- **Play** someone else's isle — 24 official isles in five themed chapters, community isles
+- **Play** someone else's isle — 56 official isles in nine themed chapters, community isles
   merged on GitHub, and isles shared online.
 - **Create** your own — paint tiles on a grid, watch the isle grow in 3D, and the solver tells
   you instantly whether it's solvable and its par. Share it online or contribute it by PR.
@@ -281,7 +281,7 @@ metadata and isle order live in `isles/official/chapters.json`. `@klar/core` doe
 `isles.js` as `CHAPTERS` / `CURATED_ISLES`, without `catch`) and verifies every isle; CI diffs the
 module and `core/test/isles.mjs` fails if it is stale. Format: `isles/README.md` § Official isles.
 
-**24 official isles, five chapters**, all verified in CI (`core/test/isles.mjs` + `tools/author.mjs`):
+The first 24 official isles in the five launch chapters, verified in CI (`core/test/isles.mjs` + `tools/author.mjs`):
 
 | # | Isle | Chapter | Par | Mechanics the solution uses |
 |---|---|---|---|---|
@@ -411,17 +411,14 @@ only move the epoch earlier, so shared numbers never shift. First hand-made dail
 shipped isle, seed par) → local playtest at `/daily/<date>` → PR (solution + catch in `<details>`).
 Brief = weekday tier rotation (Mon easy · Tue tricky · Wed hard · Thu tricky · Fri hard · Sat
 fiendish · Sun tricky) adjusted by recent dailies' clear rates, plus a catch type unused in 7 days.
-After a clear the share text `Klarbase Daily #N · M moves (par P) · ★★☆` + `/daily` link is
+After a clear the share text `Brclio Klarbase Daily #N · M moves (par P) · ★★☆` + `/daily` link is
 copied (no route). See `isles/daily/README.md`.
 **Past Daily Isles (2026-10-23):** once its UTC day has passed, a dated daily appears on the
 Community tab's *Past Daily Isles* shelf (newest first, `#N` badge, credited to its `author`) and
 plays at `/daily/<date>` with the same stats key, Daily number and share text (link → that date).
-The live site never opens a future date; the dev server opens any (K10 playtests). Dailies are
-credited `"author": "TanmoyP"` (isle-smith writes it). Undated days were pool picks of isles
+The live site never opens a future date; the dev server opens any (K10 playtests). Credit the actual designer in the optional `author` field when known. Preserve existing credits. Undated days were pool picks of isles
 already in the game, so there is nothing else to archive.
-**Online isles** live in the database (`Puzzle` rows, `json` = canonical isle + par + solution).
-Legacy v4 maquette rows may still exist in prod; the client tells players those links are
-from an older version.
+**Online isles** are encrypted, separate GitHub records in the Brclio deployment (§9). The optional Node backend stores one `Puzzle` row per isle and can recognize legacy v4 maquette links.
 
 ## 5b. Sky Atlas — the endless overworld (core, F1)
 
@@ -658,6 +655,12 @@ The browser interface defaults to Simplified Chinese. The language button in the
 
 ## 8. Server & API
 
+The public site uses Pages Functions for GitHub sign-in, saves, comments and online isles. Production settings and endpoints are documented in [DEPLOYMENT.md](DEPLOYMENT.md#online-services). Players send public feedback through [Brclio Issues](https://github.com/Brclio/Brclio-klarbase/issues) and private requests to [the maintainer](mailto:bornforthis@bornforthis.cn).
+
+### Optional Node and PostgreSQL backend
+
+The endpoint table, Prisma models and analytics options below describe the separate Express service.
+
 ```
 GET    /api/health
 *      /api/auth/*                         better-auth (GitHub, Google)
@@ -701,7 +704,7 @@ the player chose to give, the path it was sent from, and the user only if signed
 limiter keeps it in memory for its window). Cascade, not SetNull: deleting an account deletes
 everything it sent, which is what `/privacy` promises. Anonymous feedback is deleted by hand on
 request (matched by reply email). Read with `curl -H "Authorization: Bearer $STATS_TOKEN"
-https://klarbase.dev/api/feedback`.
+http://localhost:3000/api/feedback`.
 
 **`Comment` + `CommentReport` (migration `20261118120000_comments`) — hold user data.** `Comment`:
 `id, isleKey, userId → User Cascade, body, hidden, reports, createdAt`, index `(isleKey, createdAt)`;
@@ -726,15 +729,13 @@ GitHub name, quality, last provider) never sync.
 settings, quality, draft, dailies, map position + explored chunks, effort, GitHub name, last provider) + anonymous `IslePlay` sums. Signed in: better-auth
 `User` (name, email, avatar), `Account` (provider link + OAuth tokens), `Session` (cookie token,
 **ipAddress, userAgent**), plus their `Puzzle`, `Report`, `Plot`, `Feedback`, `Comment`, `CommentReport`, `Progress` rows — all cascade
-from `User`. Cloudflare Web Analytics (cookieless). No cookie banner: the only cookie is the
-sign-in session (plus a short-lived OAuth state cookie), strictly necessary. **Analytics (2026-11-18):** cookieless PostHog EU via `/ingest`
+from `User`. The service uses a sign-in session cookie and a short-lived OAuth state cookie. **Analytics (2026-11-18):** cookieless PostHog EU via `/ingest`
 (`client/src/analytics.js`): `persistence:'memory'`, only the fixed `EVENTS` list with allow-listed props, off when `VITE_POSTHOG_KEY` is unset, when
 DNT/GPC is sent, or when `localStorage klarbase.v2.analytics = 'off'` (toggle on `/privacy`). Signed-in players are identified by the opaque user id only.
-Set PostHog's "Discard client IP data" project setting and its data-retention period (the policy says ≤ 12 months). Fonts are
+Configure IP discarding and retention on the optional PostHog project before enabling it. Fonts are
 **self-hosted** (`@fontsource/fredoka` + `nunito`, OFL-1.1, bundled by Vite) — no request ever goes to Google Fonts; keep it that way. **Legal pages** (`/privacy /terms /guidelines /imprint /licenses`,
-`client/src/legal/*`, one `#scr-legal` screen): the imprint reads `VITE_IMPRINT_NAME/ADDRESS/EMAIL` at build time (Dockerfile ARGs) — never commit them.
-Any new stored data or processor means updating `legal/privacy.js` in the same change. Account deletion is manual: the player signs in and sends
-feedback asking for it (the `userId` on the row proves who asked); delete the `User` row.
+`client/src/legal/*`, one `#scr-legal` screen): the bilingual contact page uses the public operator information from `client/src/deployment.js`.
+Keep the privacy pages in both languages in sync with the deployment's data handling. Requests for access, correction or deletion go to the maintainer’s published mailbox. Verify control of the relevant account before processing a request.
 
 **Stats (2026-10-19).** `/api/stats` returns `{users, users7d, isles, isles7d, sharers7d}`: counts
 only, no ids, names or emails, no new table. Since Phase 1, plays and clears are measured
@@ -754,11 +755,7 @@ The internal `brclio-klarbase-verifier` Worker uses a SQLite-backed Durable Obje
 Workers Builds deploys the verifier from the same production branch. Both services run on Cloudflare Free.
 See [`DEPLOYMENT.md`](DEPLOYMENT.md#brclio-production) for project settings and rollback.
 
-**Upstream.** A single Railway service (Docker) serving API + built client, Neon Postgres
-(pooled runtime / direct migrations), Cloudflare in front, **no cron**. The Dockerfile now also
-copies `isles/` so community isles are bundled. Full detail: `docs/archive/v1/ENGINEERING-v1.md` §7
-and [`DEPLOYMENT.md`](DEPLOYMENT.md). Scaling gotcha still open: the in-memory rate limiter
-must move to a shared store before running more than one replica.
+**Optional local backend.** The Express and PostgreSQL service under `server/` can serve the built client from the same origin. Its in-memory rate limiter assumes a single instance. See [.env.example](.env.example) for development settings.
 
 **Discovery.** `client/public/` → `dist/`: `robots.txt` (all crawlers incl. AI, `/api/` disallowed),
 `llms.txt`, `site.webmanifest`, `favicon.svg`, `.well-known/security.txt` (the server mounts
@@ -778,8 +775,7 @@ managed robots.txt must stay **off** or it overrides ours.
 - ✅ Client: all screens verified in the browser (title, picker with real mini-map thumbnails,
   play, replay, win, lock modal, builder with live verdict, community tab). Phone-width layout done; the phone builder is a bottom sheet (paint tools first) and the 3D isle is framed above it (`World.setInsetBottom`).
 - ✅ Contribution pipeline: checker + CI + docs + 11 PR scenarios.
-- ✅ v2 live on klarbase.dev. Repo public under MIT (`LICENSE`, `SECURITY.md`); branch ruleset applied.
-- 🟡 Official isles not seeded into prod DB (optional — they're bundled anyway).
+- ✅ Production runs at [klarbase.brclio.com](https://klarbase.brclio.com). The deployment bundles all 56 official isles. The public repository accepts issues, pull requests and private security reports.
 
 ## 11. Roadmap — placeholders for CEO / CMO / CTO
 
@@ -804,27 +800,31 @@ difficulty audit (`tools/difficulty.mjs`), tiers Breeze → Mythic, Twist isles,
 cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 
 **Open questions for the leadership table:**
-1. ~~License~~ — decided 2026-10-19: **MIT for everything**, code and isles (founder call; credit stays in-game).
-2. Seed the official isles into prod, or keep them bundled-only?
+1. ~~License~~ — decided 2026-10-19: MIT for game code and isles. The licences page credits the bundled fonts, libraries and Brclio identity materials.
+2. Official isles ship in the production bundle. Optional PostgreSQL installations can seed them explicitly.
 3. Moderation for online shares: auto-hide at 3 reports today — enough?
 
 ## 12. Gotchas (read before deploying or touching auth)
 
-- **better-auth is exact-pinned to `1.4.22`** to match the Prisma schema (1.7 expects `Account.issuer`).
-- `railway up --ci` often drops its log stream with a timeout — **not** a failed build; verify via the served bundle hash and `/api/health`.
-- **Upstream Railway auto-deploys every merge to `main`** (seen 2026-10-19: deploys at each PR merge). `railway up` uploads the *working directory*, so only run it from a clean `main` checkout — never from a feature branch.
+- The public release is built from `main` by both Cloudflare Pages and Workers Builds. Check the revision and status on both services, then check the custom domain and `/api/health`.
+- For the optional Node backend, better-auth is pinned to `1.4.22` to match the Prisma schema (1.7 expects `Account.issuer`).
 - **Browser pane hidden ⇒ `requestAnimationFrame` stops**, so Pip's tweens never finish and keys queue up. Show the pane (`show_pane preview`) before driving solutions in the browser.
-- Neon `DIRECT_URL` = pooled URL minus `-pooler`. OAuth callbacks must match `BETTER_AUTH_URL` exactly.
+- The production GitHub OAuth callback must match `AUTH_ORIGIN`. The optional Node backend uses `BETTER_AUTH_URL` and its own database URLs.
 - **New rules or tiles:** change `core/src/isle/*`, run `node core/test/isles.mjs` — it re-solves every official isle and reports any par that moved; then `node tools/author.mjs` and commit any regenerated `core/src/isle/official.js`.
 - **New official isle:** add `isles/official/<chapter-key>/<id>.json` and its id to `isles/official/chapters.json`, run `node tools/author.mjs` — it prints the true par and solution to paste in.
-- **Browser pane:** this Claude session was started from the byte-mvp folder, so the preview launcher reads `byte-mvp/.claude/launch.json`; start future klarbase sessions from the klarbase folder. Viewport emulation at custom sizes misreports layout — trust the pane's natural size.
-- **Secrets** live only in Railway variables — never in the repo, CI or chat. If one is ever exposed, rotate it.
+- Keep the public client and GitHub data repository free of credentials. Production uses encrypted Pages secrets for OAuth, the storage app private key and the data-encryption key. Keep the existing data-encryption key when redeploying.
 
 ---
 
 ## 13. Session Log
 
 > Newest first. Sessions (a)–(k) of 2026-08-19 are in `docs/archive/v1/ENGINEERING-v1.md`.
+
+### 2026-11-22 — Brclio identity and operator contacts
+
+- Identify Brclio as the publisher and 黄家宝 (AI悦创, @AndersonHJB) as the maintainer across the bilingual game, sharing, metadata, repository and contact pages. Use the brand website for Brclio and the maintainer’s personal site for his profile.
+- Send contributions and public feedback to the Brclio code repository, security reports to its private reporting form, and private account requests to the maintainer’s mailbox.
+- Preserve the original MIT notice, third-party notices and individual isle credits. New community and daily entries credit their actual designers when provided.
 
 ### 2026-11-22 — Simplified Chinese and English interface
 
@@ -841,6 +841,8 @@ cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 - Use the Brclio origin in discovery assets and keep API paths out of the SPA fallback.
 - Add GitHub login, account-isolated cloud saves, comments and online isle sharing on Cloudflare Free. Store data as encrypted records in the private Brclio GitHub data repository and verify publishes in an internal Durable Object.
 - Use manual outbound redirect handling on Workers for authenticated GitHub calls. Reject redirect responses before consuming data.
+
+> Earlier entries document the original game’s development and historical hosting. Current operating procedures are in §9 and DEPLOYMENT.md.
 
 ### 2026-11-19 (ah) — Integration: review fixes, local-DB route checks, PRs
 - **How this release was built:** an Opus plan, then six Sonnet agents in parallel worktrees (A repo · B comments ·

@@ -1,7 +1,6 @@
 // Klarbase server — Phase 2+3. Express 4 + Prisma + better-auth.
-// In production this same process serves the built client (single-service
-// deploy on Railway/Fly — see README), so no CORS is needed; in dev, Vite
-// proxies /api here.
+// The optional Node deployment can serve the built client. Vite proxies /api here
+// for local development. The public Brclio site uses Cloudflare Pages Functions.
 import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -20,7 +19,7 @@ const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);   // behind Railway/Fly edge proxies
 
-// www.klarbase.dev → klarbase.dev. One origin only: sign-in cookies and OAuth
+// Normalize the www alias. Sign-in cookies and OAuth
 // callbacks are bound to BETTER_AUTH_URL, so a second hostname would break login.
 app.use((req, res, next) => req.hostname.startsWith('www.')
   ? res.redirect(301, `https://${req.hostname.slice(4)}${req.originalUrl}`) : next());

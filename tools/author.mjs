@@ -48,13 +48,13 @@ console.log(`
 ${CURATED_ISLES.length} official isles verified — core/src/isle/official.js is current`);
 
 // --seed: publish the official isles as immutable rows owned by a system user.
-// Writes to whatever DATABASE_URL points at: local for testing, prod only on purpose.
+// Targets the optional Postgres backend. Brclio production bundles the official catalogue.
 if(process.argv.includes('--seed')){
   const { PrismaClient } = await import('@prisma/client');
   const prisma = new PrismaClient();
-  const SYS = { id:'klarbase-official', name:'Klarbase', email:'official@klarbase.dev' };
+  const SYS = { id:'klarbase-official', name:'Brclio Klarbase', email:'klarbase-official@brclio.invalid' };
   try {
-    await prisma.user.upsert({ where:{ id:SYS.id }, update:{}, create:{ ...SYS, emailVerified:true } });
+    await prisma.user.upsert({ where:{ id:SYS.id }, update:{ name:SYS.name, email:SYS.email }, create:{ ...SYS, emailVerified:true } });
     for(const isle of CURATED_ISLES){
       const json = stableStringify({ ...canonicalIsle(isle), par:isle.par, solution:isle.solution });
       await prisma.puzzle.upsert({ where:{ hash:isleHash(isle) }, update:{},

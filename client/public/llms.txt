@@ -1,8 +1,9 @@
-# Klarbase
+# Brclio Klarbase
 
-> Klarbase is a free, open-source, cozy puzzle game that runs in the browser. Pip hops across small floating isles — turn-based grid puzzles with stairs, ledges, crates, ice, plates and gates, levers and bridges, keys and doors, portal arches, sky scales, balloons and gentle hazards. Every isle is checked by a solver, so each one is solvable and has a known par. Anyone can build isles in the in-game builder and share them online or add them to the game by GitHub pull request. No account is needed to play or build.
+> Brclio Klarbase is a free, open-source browser puzzle game published by Brclio and maintained by 黄家宝 (AI悦创, @AndersonHJB). Pip hops across small floating isles — turn-based grid puzzles with stairs, ledges, crates, ice, plates and gates, levers and bridges, keys and doors, portal arches, sky scales, balloons and gentle hazards. Every isle is checked by a solver, so each one is solvable and has a known par. Anyone can build isles in the in-game builder and share them online or add them to the game by GitHub pull request. No account is needed to play or build.
 
 - Play: https://klarbase.brclio.com/ (desktop and mobile; keyboard, touch d-pad)
+- Languages: Simplified Chinese and English
 - Price: free; no ads; MIT-licensed source
 - Made with: JavaScript, three.js (all art and sound are procedural), Cloudflare Pages and Pages Functions
 
@@ -21,7 +22,10 @@
 
 ## Source
 
-- [GitHub repository](https://github.com/Brclio/Brclio-klarbase): source code, issues and community isles
+- [Brclio](https://brclio.com): publisher
+- [黄家宝 · AI悦创](https://bornforthis.cn): maintainer, [@AndersonHJB on GitHub](https://github.com/AndersonHJB)
+- [GitHub repository](https://github.com/Brclio/Brclio-klarbase): source code and community isles
+- [Project issues](https://github.com/Brclio/Brclio-klarbase/issues): feedback and bug reports
 - [README](https://raw.githubusercontent.com/Brclio/Brclio-klarbase/main/README.md): project overview
 
 ## Optional

@@ -59,9 +59,8 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement by using the
-in-game **Send feedback** form at [klarbase.dev](https://klarbase.dev) or by
-opening a private GitHub security advisory on this repository. All complaints
+reported privately to the Brclio project maintainer, 黄家宝 (AI悦创, @AndersonHJB),
+by email at [bornforthis@bornforthis.cn](mailto:bornforthis@bornforthis.cn). All complaints
 will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the

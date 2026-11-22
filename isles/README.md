@@ -8,7 +8,7 @@ official isles (see [Official isles](#official-isles)). All three use the same f
 How to contribute one: press **Propose on GitHub** in the game's builder — it checks the isle
 and opens a prefilled pull request on GitHub. Details: [CONTRIBUTING.md](../CONTRIBUTING.md).
 Building in the game? The builder's **How to build** guide
-([klarbase.dev/how-to-build](https://klarbase.dev/how-to-build)) explains every tile with tips;
+([klarbase.brclio.com/how-to-build](https://klarbase.brclio.com/how-to-build)) explains every tile with tips;
 this file is the exact format behind it.
 
 ## The format
@@ -95,7 +95,9 @@ that share map tiles must be at least **8 levels** apart so the lower one stays 
 
 An optional `"tier"` is the maker's **gut call**: `breeze` · `easy` · `tricky` · `hard` ·
 `fiendish` · `mythic`. Every isle shows a score from 0 to 100 and its tier
-(Breeze 0–15 · Easy 15–35 · Tricky 35–55 · Hard 55–72 · Fiendish 72–88 · Mythic 88–100):
+(Breeze 0–15 · Easy 15–35 · Tricky 35–55 · Hard 55–72 · Fiendish 72–88 · Mythic 88–100).
+The Brclio site uses the declared tier or the solver estimate. The optional Express service can
+include observed plays in the shared `difficultyScore()` calculation.
 
 ```
 score = (20 · prior + n · observed) / (20 + n)
@@ -106,7 +108,7 @@ score = (20 · prior + n · observed) / (20 + n)
   many shortest routes). Never from tile counts or layout.
 - **observed** = what players did, from anonymous per-isle totals: clear rate, hints and
   restarts per attempt, median moves over par, median time to clear. **n** = attempts.
-- Until 20 people have played, the score is an early estimate (the badge tooltip says so). `tier` is presentation, like `name`:
+- With fewer than 20 observed plays, the shared score reports an early estimate. `tier` is presentation, like `name`:
   it never changes the isle's hash. One function computes all of this:
   `difficultyScore()` in `core/src/isle/difficulty.js`.
 

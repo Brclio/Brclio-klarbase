@@ -1,18 +1,20 @@
 <div align="center">
 
-# Klarbase 🏝️
+# Brclio Klarbase 🏝️
 
-**Tiny floating isles · clever little paths.**
+黄家宝（AI悦创）维护的浮岛解谜游戏。默认简体中文，可随时切换英语。
+
+[开始游戏](https://klarbase.brclio.com) · [Brclio 品牌站](https://brclio.com) · [AI悦创个人站](https://bornforthis.cn)
 
 [![CI](https://github.com/Brclio/Brclio-klarbase/actions/workflows/ci.yml/badge.svg)](https://github.com/Brclio/Brclio-klarbase/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/github/license/TanmoyP/klarbase)](LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/TanmoyP/klarbase?style=flat)](https://github.com/TanmoyP/klarbase/stargazers)
-[![Discussions](https://img.shields.io/github/discussions/TanmoyP/klarbase)](https://github.com/TanmoyP/klarbase/discussions)
+[![License: MIT](https://img.shields.io/github/license/Brclio/Brclio-klarbase)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/Brclio/Brclio-klarbase?style=flat)](https://github.com/Brclio/Brclio-klarbase/stargazers)
+[![Issues](https://img.shields.io/github/issues/Brclio/Brclio-klarbase)](https://github.com/Brclio/Brclio-klarbase/issues)
 [![Play](https://img.shields.io/badge/play-klarbase.brclio.com-f08a4b)](https://klarbase.brclio.com)
 
 [**▶ Play at klarbase.brclio.com**](https://klarbase.brclio.com) · [Make an isle](#make-an-isle) · [Contribute](CONTRIBUTING.md) · MIT licensed
 
-<img src="docs/screenshots/title.png" alt="Klarbase title screen: a sandy oasis isle floating in an orange sky" width="900">
+<img src="client/public/brclio-klarbase-share.png" alt="Brclio Klarbase 浮岛解谜游戏" width="900">
 
 </div>
 
@@ -27,7 +29,7 @@
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/mountain.png" alt="The Peak, a snowy mountain isle with ice, stairs and a door"><br><sub><b>Summit</b> · mountain — everything you've learned, on one peak</sub></td>
-    <td width="50%"><img src="docs/screenshots/picker.png" alt="The isle picker with mini-map thumbnails for every isle"><br><sub>24 hand-made isles, each with a par and up to three stars</sub></td>
+    <td width="50%"><img src="docs/screenshots/picker.png" alt="The isle picker with mini-map thumbnails for every isle"><br><sub>Hand-made isles, each with a par and up to three stars</sub></td>
   </tr>
 </table>
 
@@ -35,20 +37,14 @@ A cozy browser puzzle game. Guide **Pip**, a round little sprout spirit, across 
 dioramas — push crates into the water to make bridges, slide across ice, pull levers that flip
 bridges, step through arches — one hop per key, to the glowing star.
 
-- **24 hand-made isles** in five themed chapters: Canopy (jungle), Mirage (oasis), Lagoon
-  (tropical), Rooftops (urban), Summit (mountain) — plus an optional, much harder **Twist** isle
-  per chapter, and a **Daily Isle** (`/daily`) with a spoiler-free result to share.
-- **Every isle shows its difficulty** (Breeze → Mythic, 0–100): it starts as the maker's gut call
-  and settles as people play.
+- **56 official isles in nine chapters**, including Sky Scales in Hanging Gardens, balloons in Windward and moving hazards in Nightfall. The **Daily Isle** (`/daily`) gives everyone the same puzzle and a spoiler-free result to share.
+- **Every isle shows its difficulty** on a 0–100 scale from Breeze to Mythic. The Brclio edition uses the maker’s rating or the solver’s estimate.
 - **Every isle is solver-verified** — solvable, with an exact par and a replayable smart
   solution (earn it by signing in, clearing the isle, or putting in the time).
 - **Build your own** in the in-game builder, share it online, or **contribute it here by pull
   request** — automated checks make sure it's solvable and fair, and you're credited by name.
 
-The Brclio edition at **[klarbase.brclio.com](https://klarbase.brclio.com)** runs on Cloudflare Free.
-Play and build as a guest, or sign in with GitHub to sync progress, share isles and post comments.
-The original [Klarbase](https://klarbase.dev) is by TanmoyP and its contributors.
-See the Brclio [privacy policy](https://klarbase.brclio.com/privacy) and [deployment runbook](DEPLOYMENT.md).
+This edition runs on Cloudflare Free. The game opens in Simplified Chinese and can be switched to English at any time. Play and build as a guest, or sign in with GitHub to sync progress, share isles and post comments. [Play](https://klarbase.brclio.com) · [Privacy](https://klarbase.brclio.com/privacy) · [Deployment](DEPLOYMENT.md)
 
 ## Make an isle
 
@@ -68,7 +64,7 @@ tile reference and rules: **[isles/README.md](isles/README.md)**.
 
 ## Run it locally
 
-Needs Node 20+.
+Use Node.js 22 to match the production build.
 
 ```bash
 npm install
@@ -77,7 +73,7 @@ npm test                    # engine + all official isles + contribution rules
 node tools/check-isles.mjs  # the same check every isle PR runs
 ```
 
-The online parts (sign-in, sharing) need the server and Postgres — see [DEPLOYMENT.md](DEPLOYMENT.md).
+For the Cloudflare build, run `npm run build:pages`. It checks the Pages API and puzzle verifier before generating `client/dist`. Sign-in and online sharing use Pages Functions and per-record GitHub storage. [Deployment settings](DEPLOYMENT.md)
 
 ## Where things live
 
@@ -85,20 +81,12 @@ The online parts (sign-in, sharing) need the server and Postgres — see [DEPLOY
 | --- | --- |
 | [`core/`](core) | `@klar/core` — the rules, the solver, the official isles and the contribution rules (pure JS, zero deps) |
 | [`client/`](client) | `@klar/client` — the game and builder: Vite + three.js, all art and audio procedural |
-| [`server/`](server) | `@klar/server` — Express + Prisma + better-auth: sign-in, online sharing, anonymous play stats |
+| [`functions/`](functions) | Cloudflare Pages API for GitHub sign-in, cloud saves, online isles and comments |
+| [`cloudflare/`](cloudflare) | Internal Worker and Durable Object for server-side isle verification |
+| [`server/`](server) | Shared validation, server tests and the optional Express/PostgreSQL backend |
 | [`isles/`](isles) | the isles as JSON: `official/`, `community/<author>/` and `daily/`, plus the format guide |
 | [`tools/`](tools) | `check-isles.mjs` (the PR gate), `author.mjs` (official isle artifacts), difficulty audit |
 | [`docs/`](docs) | screenshots, the game summary and design proposals |
-
-## How it's built
-
-```text
-core/     @klar/core — the rules, the solver, the 24 official isles, the contribution rules
-client/   Vite + three.js — everything is procedural: no models, no textures, no audio files
-server/   Express + Prisma + better-auth — sharing isles online
-isles/    community isles, credited to their authors
-tools/    check-isles.mjs (the PR gate) · author.mjs (official isle artifacts)
-```
 
 The rules live in exactly one place (`core/src/isle/`). The game, the builder, the solver, the
 PR checks and the server all use it, so they can never disagree. Engineering notes:
@@ -107,14 +95,16 @@ PR checks and the server all use it, so they can never disagree. Engineering not
 ## Community
 
 - **[Brclio issues](https://github.com/Brclio/Brclio-klarbase/issues/new/choose)** — bugs, isle ideas, feature requests
-- **[Upstream discussions](https://github.com/TanmoyP/klarbase/discussions)** — ideas, questions, show your isles
+- **Questions or private feedback** can go to the maintainer, 黄家宝 (AI悦创, [@AndersonHJB](https://github.com/AndersonHJB)). [Email](mailto:bornforthis@bornforthis.cn)
 - **[Code of Conduct](CODE_OF_CONDUCT.md)** · [Community guidelines](https://klarbase.brclio.com/guidelines) · [Privacy](https://klarbase.brclio.com/privacy)
 
 ## Contributors
 
-[![Contributors](https://contrib.rocks/image?repo=TanmoyP/klarbase)](https://github.com/TanmoyP/klarbase/graphs/contributors)
+Brclio maintains this edition. The original Klarbase game is by TanmoyP and the Klarbase contributors. Each community isle keeps its own author credit. [Brclio repository contributors](https://github.com/Brclio/Brclio-klarbase/graphs/contributors) · [Original MIT notice](LICENSE)
 
 ## License
 
 [MIT](LICENSE) — code and isles alike. Isles you contribute are released under the same
 license, and the game always shows who made them. Security reports: [SECURITY.md](SECURITY.md).
+
+The Brclio mark used in the site icons and sharing image comes from the Brclio brand kit. Its visual direction is based on the Esther Design System, © 2026 ESTHER不二 (esthersjw), under CC BY-NC-SA 4.0. The sharing image combines the mark with the game scenery. [Brand and third-party credits](https://klarbase.brclio.com/licenses) · [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { SITE_URL } from './src/deployment.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +8,6 @@ import { fileURLToPath } from 'node:url';
 // chapters, community isles, hand-made dailies), so every playable page is listed
 // without hand edits. Past dailies only: live never opens today's or a future date
 // by its own URL. No <lastmod> — a build date on every URL would be a guess.
-const SITE = 'https://klarbase.brclio.com';
 const ISLES = fileURLToPath(new URL('../isles/', import.meta.url));
 const json = f => JSON.parse(fs.readFileSync(f, 'utf8'));
 const dirs = d => fs.readdirSync(d, { withFileTypes:true }).filter(e => e.isDirectory()).map(e => e.name);
@@ -33,7 +33,7 @@ function sitemapXml(){
     if(key.startsWith('c/')) paths.push(`/${key}`);
     else if(key.slice(2) < today) paths.push(`/daily/${key.slice(2)}`);
   }
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map(p => `  <url><loc>${SITE}${p}</loc></url>`).join('\n')}\n</urlset>\n`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map(p => `  <url><loc>${SITE_URL}${p}</loc></url>`).join('\n')}\n</urlset>\n`;
 }
 const sitemap = () => ({
   name:'klarbase-sitemap',

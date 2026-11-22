@@ -30,7 +30,7 @@ export function openSignIn(why = ''){
   const buttons = signInButtons();
   const body = document.getElementById('modalBody');
   body.classList.remove('wide');
-  body.innerHTML = `<h2>${t('Sign in to Klarbase', '登录 Klarbase')}</h2>
+  body.innerHTML = `<h2>${t('Sign in to Brclio Klarbase', '登录 Brclio Klarbase')}</h2>
     ${buttons ? `${why ? `<p class="facts" style="font-weight:700">${why}</p>` : ''}
     <div class="rules" style="margin:10px 0 14px">
       <div><span class="ico">☁</span><span>${t('Your progress on every device', '在不同设备上继续上次的进度')}</span></div>

@@ -4,11 +4,11 @@ import { UPDATED, REPO, esc, contactLine, updatedLine, otherPages } from '../sha
 export const title = '社区守则';
 export const html = () => STATIC_DEPLOYMENT ? `
 ${updatedLine('2026-11-22')}
-<p>请尊重他人，反馈时围绕主题，不要在公开帖子中留下个人信息。请让其他玩家自己发现解法。欢迎分享不剧透的提示。</p>
+<p>参与 Brclio Klarbase 的社区交流时，请尊重他人，反馈时围绕主题，不要在公开帖子中留下个人信息。请让其他玩家自己发现解法。欢迎分享不剧透的提示。</p>
 <p>想提交浮岛或报告问题，请参阅<a href="${esc(REPO)}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">贡献指南</a>，或前往 <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">GitHub 问题区</a>。</p>
 ${otherPages()}` : `
 ${updatedLine(UPDATED)}
-<p>我们希望每个人都能在 Klarbase 轻松游玩。以下规则适用于评论、浮岛名称和你分享的其他内容，也是<a href="/terms" data-go="/terms">使用条款</a>的一部分。</p>
+<p>我们希望每个人都能在 Brclio Klarbase 轻松游玩。以下规则适用于评论、浮岛名称和你分享的其他内容，也是<a href="/terms" data-go="/terms">使用条款</a>的一部分。</p>
 <h3>友善交流</h3>
 <p>可以聊聊你喜欢的地方，或指出哪里还可以更清楚。禁止侮辱、骚扰、仇恨言论和威胁，无论针对个人还是群体。对谜题有不同看法很正常，请勿攻击他人。</p>
 <h3>给其他玩家留出解谜的乐趣</h3>

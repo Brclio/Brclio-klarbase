@@ -11,7 +11,7 @@ from a pool (Twist isles, Tricky-or-harder official isles, community isles) — 
 for everyone. Dailies are numbered from 2026-10-19 (`Klarbase Daily #1`); adding a file never renumbers them.
 
 After its day, a hand-made daily moves to **Past Daily Isles** on the Community tab
-(`/daily/<date>`), credited to its `author`, with the same stats and the same Daily number.
+(`/daily/<date>`), with the same Daily number and its original `author` credit when supplied.
 A future date is never playable on the live site.
 
 ## The file

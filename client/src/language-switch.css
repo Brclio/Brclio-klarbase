@@ -1,0 +1,56 @@
+#topbar #btnLanguage { font-size: 13px; font-weight: 800; }
+
+/* Keep the existing HUD and its back button clear of the language control. */
+@media (min-width: 481px) and (max-width: 640px) {
+  body:is(.in-game, .in-map) .hud-tl { right: 250px; }
+}
+@media (max-width: 480px) {
+  body:is(.in-game, .in-map) #topbar {
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
+  }
+  body.in-game .hint-text, body.in-map .map-card {
+    top: calc(max(12px, env(safe-area-inset-top)) + 84px);
+  }
+}
+@media (max-width: 480px) {
+  /* In the builder, leave the left edge free for Back, even with a signed-in player. */
+  body:has(#scr-create.on) #topbar {
+    display: grid;
+    grid-template-columns: repeat(6, 34px);
+  }
+  body:has(#scr-create.on) #authchip {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: end;
+    max-width: 100%;
+  }
+  #topbar:has(.who) { max-width: calc(100vw - 20px); }
+  #authchip .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #authchip .btn { white-space: nowrap; }
+  body:not(.in-game, .in-map):not(:has(#scr-create.on)) #topbar:has(.who) #authchip {
+    min-width: 0;
+    display: grid;
+    justify-items: end;
+    gap: 2px;
+  }
+  #topbar:has(.who) .icon-btn { flex-shrink: 0; }
+  #topbar:has(.who) #authchip .who { max-width: 100%; }
+}
+@media (max-width: 480px) and (max-height: 700px) {
+  /* Both scripts can wrap on a short phone. Keep the title and last action reachable. */
+  #scr-title.on {
+    top: calc(max(12px, env(safe-area-inset-top)) + 68px);
+    bottom: env(safe-area-inset-bottom);
+    display: flex;
+    justify-content: center;
+    overflow-y: auto;
+  }
+  #scr-title .hero {
+    position: relative;
+    inset: auto;
+    transform: none;
+    flex: none;
+    margin: auto 0;
+  }
+}

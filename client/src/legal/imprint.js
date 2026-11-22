@@ -17,5 +17,5 @@ ${operatorConfigured() ? `<p>Email: <a href="mailto:${esc(o.email)}">${esc(o.ema
 ${operatorConfigured() ? `<p>${esc(o.name)}, address as above.</p>` : '<p>Not configured for this build.</p>'}
 <h3>Disclaimer</h3>
 <p>Klarbase is a free, non-commercial hobby project. Isles and comments created by players are their authors' own content. If you find something unlawful, please report it with the report button or by email and we will look at it promptly.</p>
-${otherPages}`;
+${otherPages()}`;
 };

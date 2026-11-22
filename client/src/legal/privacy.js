@@ -1,6 +1,6 @@
 // Privacy policy (GDPR Art. 13). Keep in sync with ENGINEERING.md §8 "What is stored, per person"
 // and with what the code really stores. Not legal advice.
-import { EVENTS, analyticsState, setAnalyticsEnabled } from '../analytics.js';
+import { EVENTS } from '../analytics.js';
 import { GITHUB_DEPLOYMENT, STATIC_DEPLOYMENT } from '../deployment.js';
 import { UPDATED, REPO, esc, operatorBlock, operatorConfigured, contactLine, updatedLine, authoritative, otherPages } from './shared.js';
 
@@ -25,7 +25,7 @@ ${updatedLine('2026-11-22')}
 
 <h3>Contact</h3>
 <p>${operatorConfigured() ? `You can reach the site operator at ${contactLine()}.` : `Use the <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">project issue tracker</a> for general questions. Keep personal information out of public issues.`}</p>
-${otherPages}` : STATIC_DEPLOYMENT ? `
+${otherPages()}` : STATIC_DEPLOYMENT ? `
 ${updatedLine('2026-11-22')}
 <h3>In your browser</h3>
 <p>Klarbase saves your progress, settings, builder draft, Daily results, map exploration and the GitHub username you enter for contributions in your browser. To erase those records, clear this site's data in your browser. The game uses no account or analytics cookies in this edition.</p>
@@ -38,7 +38,7 @@ ${updatedLine('2026-11-22')}
 
 <h3>Contact</h3>
 <p>${operatorConfigured() ? `You can reach the site operator at ${contactLine()}.` : `For general questions about this edition, use the <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">GitHub issue tracker</a>.`}</p>
-${otherPages}` : `
+${otherPages()}` : `
 ${updatedLine(UPDATED)}
 <p>Klarbase is a small open-source game made by one person. It collects as little as it can, sells nothing and shows no ads. This page explains what is stored, why, who handles it and what rights you have. It is written in plain language; the headings follow what the GDPR (Art. 13) asks us to tell you.</p>
 
@@ -124,17 +124,7 @@ ${eventsHtml()}
 
 <h3>11. Changes</h3>
 <p>If what we do changes, we update this page and its date. The version on this page is the current one.</p>
-${authoritative}
-${otherPages}`;
+${authoritative()}
+${otherPages()}`;
 
-// Wire the analytics switch: shows the real state and flips it live.
-export function mount(root){
-  const box = root.querySelector('#analyticsBox'); if(!box) return;
-  const say = { on:'Analytics is <b>on</b>.', off:'Analytics is <b>off</b> — nothing is sent.', dnt:'Analytics is <b>off</b> because your browser sends a Do Not Track / Global Privacy Control signal.', unconfigured:'Analytics is <b>not enabled</b> in this version of Klarbase — nothing is sent.' };
-  const draw = () => {
-    const s = analyticsState();
-    box.innerHTML = `<p style="margin:0 0 6px">${say[s]}</p>${s === 'on' || s === 'off' ? `<button class="btn small">${s === 'on' ? 'Turn analytics off' : 'Turn analytics on'}</button>` : ''}`;
-    const b = box.querySelector('button'); if(b) b.onclick = () => { setAnalyticsEnabled(s === 'off'); draw(); };
-  };
-  draw();
-}
+export { mount } from './privacy-controls.js';

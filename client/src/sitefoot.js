@@ -1,13 +1,24 @@
-// Klarbase — the one site footer. Shared by the title screen, the help modal and the legal/guideline pages.
-// Internal links carry data-go: main.js's global click handler routes them in-app (no reload).
+// Internal links use data-go so the main router handles them without a reload.
 import { BRCLIO_DEPLOYMENT, REPO_URL } from './deployment.js';
+import { onLanguageChange, t } from './i18n.js';
+
+const pages = {
+  guidelines:['Guidelines', '社区守则'], privacy:['Privacy', '隐私政策'], terms:['Terms', '使用条款'],
+  imprint:['Imprint', '运营者信息'], licenses:['Licences', '许可证与致谢'],
+};
+export function legalLink(name){
+  return `<a href="/${name}" data-go="/${name}">${t(...pages[name])}</a>`;
+}
+
 export function siteFoot(){
-  const go = (p, t) => `<a href="${p}" data-go="${p}">${t}</a>`;
-  const ext = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
-  return `<nav class="site-foot" aria-label="About Klarbase">${[
-    ext(REPO_URL, 'Open source on GitHub'),
-    BRCLIO_DEPLOYMENT ? ext(REPO_URL + '/issues', 'Feedback on GitHub') : ext(REPO_URL + '/discussions', 'Discussions'),
-    go('/guidelines', 'Guidelines'), go('/privacy', 'Privacy'), go('/terms', 'Terms'),
-    go('/imprint', 'Imprint'), go('/licenses', 'Licences'),
+  const ext = (u, label) => `<a href="${u}" target="_blank" rel="noopener">${label}</a>`;
+  return `<nav class="site-foot" aria-label="${t('About Klarbase', '关于 Klarbase')}">${[
+    ext(REPO_URL, t('Open source on GitHub', 'GitHub 开源仓库')),
+    BRCLIO_DEPLOYMENT ? ext(REPO_URL + '/issues', t('Feedback on GitHub', '在 GitHub 反馈')) : ext(REPO_URL + '/discussions', t('Discussions', '讨论区')),
+    ...Object.keys(pages).map(legalLink),
   ].join('<span aria-hidden="true"> · </span>')}</nav>`;
 }
+
+onLanguageChange(() => {
+  document.querySelectorAll('nav.site-foot').forEach(nav => { nav.outerHTML = siteFoot(); });
+});

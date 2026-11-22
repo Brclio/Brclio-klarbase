@@ -9,7 +9,7 @@ export const html = () => STATIC_DEPLOYMENT ? `
 ${updatedLine('2026-11-22')}
 <p>Be respectful, keep feedback on topic and keep personal information out of public posts. Let other players discover solutions themselves. A spoiler-free hint is welcome.</p>
 <p>To propose an isle or report a problem, follow the <a href="${esc(REPO)}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">contribution guide</a> or use the <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">GitHub issue tracker</a>.</p>
-${otherPages}` : `
+${otherPages()}` : `
 ${updatedLine(UPDATED)}
 <p>Klarbase is a cozy place. These few rules keep it that way. They apply to comments, isle names and anything else you share. They are part of the <a href="/terms" data-go="/terms">Terms of Use</a>.</p>
 
@@ -30,4 +30,4 @@ ${updatedLine(UPDATED)}
 
 <h3>Consequences</h3>
 <p>Depending on how serious or repeated it is: content is hidden or removed, commenting or sharing is limited, or the account is closed. If you think a decision was wrong, write to ${contactLine()}.</p>
-${otherPages}`;
+${otherPages()}`;

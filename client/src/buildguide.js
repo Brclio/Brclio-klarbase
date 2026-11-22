@@ -3,12 +3,15 @@
 // restate isles/README.md "The rules" for builders; if a rule changes there, it
 // changes here too. Static text only — no solutions, no routes.
 
+import { t, getLanguage } from './i18n.js';
+import { gameText } from './i18n/game.js';
+import { toolGuide } from './i18n/guide.js';
 import { BRCLIO_DEPLOYMENT, STATIC_DEPLOYMENT } from './deployment.js';
 
 // code: the file character(s) · summary: one line (also the palette tooltip)
 // what: the behaviour · meta: what the file stores, limits · tip: how to use it
 // tags: badges — 'blocks' | 'walk' | 'push' | 'space' | 'maps'
-export const GUIDE = {
+const englishGuide = {
   // ---- the grid ----
   '.': { code:'.', tags:['walk'], summary:'Plain floor. Pip walks on it at its height.',
     what:'The basic floor tile. Pip can walk onto floor at the same height and hop down one level, but never climb a ledge without a ramp.',
@@ -156,6 +159,13 @@ export const GUIDE = {
     tip:'Put a thorn at a crossroads: the safe direction changes every move.' },
 };
 
+export function guideFor(id){
+  const entry = englishGuide[id];
+  if(!entry || !toolGuide[id] || getLanguage() === 'en') return entry;
+  const [summary, what, meta, tip] = toolGuide[id];
+  return { ...entry, summary, what, meta, tip };
+}
+
 const GROUPS = [
   ['The grid', ['.', ',', '-', '^+', '^h']],
   ['Terrain', ['#', 'T', '~', '*', 'ramp']],
@@ -165,20 +175,47 @@ const GROUPS = [
   ['Maps only: Weight II', ['B', 'P', 'u', 'vent', '+']],
   ['Maps only: cozy hazards', ['H', 'I', 'Y']],
 ];
-const TAG = { blocks:'blocks', walk:'walkable', push:'pushable', space:'Space', maps:'maps only' };
+const TAG = { blocks:['blocks','障碍'], walk:['walkable','可走'], push:['pushable','可推'], space:['Space','空格键'], maps:['maps only','群岛专用'] };
 
 const card = (id, ico, label) => {
-  const g = GUIDE[id];
+  const g = guideFor(id);
   return `<div class="g-el" id="g-${encodeURIComponent(id)}">
-    <div class="g-head"><span class="ico">${ico}</span><b>${label}</b><code>${g.code}</code>${g.tags.map(t => `<span class="g-tag ${t}">${TAG[t]}</span>`).join('')}</div>
-    <p>${g.what}</p><p class="g-meta"><b>In the file:</b> ${g.meta}</p><p class="g-tip"><b>Try:</b> ${g.tip}</p></div>`;
+    <div class="g-head"><span class="ico">${ico}</span><b>${gameText(label)}</b><code>${g.code}</code>${g.tags.map(tag => `<span class="g-tag ${tag}">${t(...TAG[tag])}</span>`).join('')}</div>
+    <p>${g.what}</p><p class="g-meta"><b>${t('In the file:', '文件写法')}</b> ${g.meta}</p><p class="g-tip"><b>${t('Try:', '设计点子')}</b> ${g.tip}</p></div>`;
 };
 const section = (title, body, open = false) => `<details class="g-sec"${open ? ' open' : ''}><summary>${title}</summary>${body}</details>`;
 
 // tools: builder.js TOOLS ([id, icon, label]) — the palette is the source of icons and names.
 export function buildGuideHtml(tools){
   const byId = new Map(tools.map(([id, ico, label]) => [id, [ico, label]]));
-  const els = ids => ids.filter(id => byId.has(id) && GUIDE[id]).map(id => card(id, ...byId.get(id))).join('');
+  const els = ids => ids.filter(id => byId.has(id) && englishGuide[id]).map(id => card(id, ...byId.get(id))).join('');
+  if(getLanguage() === 'zh-CN'){
+    const groups = ['地块', '地形', '起点与终点', '道具与开关', '群岛机关 · 天空天平', '群岛机关 · 重量与风', '群岛机关 · 节奏与避让'];
+    return `<div class="guide">
+      ${section('快速上手', `<ol>
+        <li>选好<b>主题</b>，为浮岛取名。也可以用<b>从模板开始</b>改编一座官方浮岛。</li>
+        <li>放下一个<b>起点</b> 🐣 和一个<b>终点</b> ⭐。点击或拖动绘制，用右键或擦除工具移除地块。</li>
+        <li>先铺地面、留出空隙、调整高度，再选一种机关，围绕它设计谜题。</li>
+        <li>看网格下方的<b>检查结果</b>，确认能否通关、最少要走几步，以及难度如何。</li>
+        <li>点击<b>▶ 试玩</b>亲自走一遍，然后${STATIC_DEPLOYMENT ? '' : '<b>在线分享</b>，或'}<b>提交到 GitHub</b>。</li></ol>`, true)}
+      ${section('读懂网格', `<p>每格由一个符号和可选的<b>高度</b>数字 0–5 表示。例如 <code>.2</code> 是高度为 2 的地面。第 0 行在北边（离镜头最远），第 0 列在西边。用<b>尺寸</b>按钮可将宽度和纵深各设为 3–14 格。</p>
+        <p>皮普能在同高地面上走，也能向下跳一级。向上要走坡道，所以跳下台阶有时就回不来了。</p>${els(GROUPS[0][1])}`)}
+      ${GROUPS.slice(1).map(([, ids], i) => section(groups[i + 1], (i >= 3 ? '<p class="g-meta">加入这里的任一机关，会自动改用群岛地图格式。</p>' : '') + els(ids))).join('')}
+      ${section('把几座浮岛连成群岛', `<p>一张地图可以容纳 1–3 座浮岛。在<b>群岛地图</b>中添加浮岛，再设置位置。x、z 的范围是 0–40 格，高度是 0–24 级。</p><ul>
+        <li>皮普不会从一座岛的边缘走到另一座。将一对拱门分别放在两岛上，就能在两岛间传送。</li>
+        <li>从上方看会重叠的浮岛，高度至少相差 8 级。</li><li>整张地图只有一个起点，至少一个终点，木箱和浮标合计最多 8 个。</li><li>玩家按 <b>M</b> 可以查看整张地图。</li></ul>`)}
+      ${section('浮岛设置', `<ul><li><b>名称</b>用于展示。提交到社区仓库时，名称需包含 3–40 个字母、数字、空格或允许的标点。</li>
+        <li><b>主题</b>决定地面与天空的样貌，玩法规则相同。</li><li><b>难度</b>由你从「入门」到「传说」之间选择。${BRCLIO_DEPLOYMENT ? '这会决定玩家看到的难度。' : '它是难度初值，之后逐渐纳入玩家的实际表现；约 20 次游玩后，实测结果占主要比重。'}如果你和求解器的判断差得较多，建造器会提示。</li>
+        <li><b>从模板开始</b>可以新建草地，也可以打开官方浮岛研究它的布局。</li></ul>`)}
+      ${section('检查、最少步数与试玩', `<ul><li>每次绘制后，求解器会自动检查最多 60,000 个状态。<b>深度检查</b>最多搜索 300,000 个状态。</li>
+        <li><b>最少步数</b>是到达终点所需的最短步数。恰好达到即可获得 ★★★。</li><li>难度面板会显示求解器发现的陷阱与最短路线数，还会建议怎样让谜题更有挑战。</li><li><b>▶ 试玩</b>会打开当前草稿，修改会自动保存在本浏览器。</li></ul>`)}
+      ${section('分享你的浮岛', `<ul>${STATIC_DEPLOYMENT ? '' : '<li><b>在线分享</b>需要先登录。在服务器验证浮岛后，你会得到一个人人都能游玩的链接。</li>'}
+        <li><b>提交到 GitHub</b>前请填写 GitHub 用户名以便署名。通过检查后，建造器会打开 GitHub，并预填 <code>isles/community/&lt;用户名&gt;/&lt;id&gt;.json</code>。在 GitHub 登录并创建合并请求，通过后你的浮岛会随游戏发布。太大的地图会下载为文件，供手动提交。</li>
+        <li>社区浮岛的最短解至少要有 6 步，须用到实际机关，而且不能与已有浮岛重复。</li><li><b>浮岛代码</b>可以直接编辑或粘贴。<b>JSON</b> 用于导出，<b>导入</b>用于读取文件。</li></ul>`)}
+      ${section('设计建议', `<ul><li><b>一岛一个点子。</b>找到最有趣的那一步，删去与它无关的布置。</li><li><b>先教，再变。</b>先让玩家学会一个机关，再让它以意外的方式派上用场。</li>
+        <li><b>让直路失效。</b>如果径直走向星星就能过关，可以在途中设一道障碍。</li><li><b>小岛也精彩。</b>一个 5×5 的推箱谜题，可能比铺满 14×14 格的岛更耐玩。</li><li><b>像新玩家一样试玩。</b>暂时忘记答案。如果第一步只能靠猜，补一条线索。</li></ul>`)}
+    </div>`;
+  }
   return `<div class="guide">
     ${section('Quick start', `<ol>
       <li>Pick a <b>theme</b> and a <b>name</b>, or <b>Start from</b> a remix of an official isle.</li>

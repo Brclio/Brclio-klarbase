@@ -12,7 +12,7 @@ ${updatedLine('2026-11-22')}
 <p>Propose isles you made or have the right to share. Isles accepted into the project are released under the MIT License and credited to their makers. See the <a href="${esc(REPO)}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">contribution guide</a> for the format and review process.</p>
 ${GITHUB_DEPLOYMENT ? `<h3>Sharing and comments</h3>
 <p>When you publish a shared isle, you release it under the MIT License. Klarbase displays your shared isles and comments along with your public profile information. Follow the <a href="/guidelines" data-go="/guidelines">community guidelines</a> and see <a href="/privacy" data-go="/privacy">Privacy</a> for how this edition stores data.</p>` : ''}
-${otherPages}` : `
+${otherPages()}` : `
 ${updatedLine(UPDATED)}
 <p>These terms apply when you use Klarbase at klarbase.dev. Playing and building need no account; some features (sharing isles, comments, cloud progress) need you to sign in. By using Klarbase you agree to these terms.</p>
 
@@ -39,5 +39,5 @@ ${updatedLine(UPDATED)}
 
 <h3>8. Law and contact</h3>
 <p>German law applies, excluding rules that would take away protections you have as a consumer under the law of the country where you live; those protections stay unaffected, as do any mandatory places of jurisdiction. Questions about these terms: ${contactLine()} — see the <a href="/imprint" data-go="/imprint">Imprint</a>.</p>
-${authoritative}
-${otherPages}`;
+${authoritative()}
+${otherPages()}`;

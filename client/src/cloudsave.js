@@ -7,6 +7,7 @@
 import { mergeProgress } from '@klar/core';
 import { GITHUB_DEPLOYMENT } from './deployment.js';
 import { api } from './net.js';
+import { t } from './i18n.js';
 import { accountForProgress, readProgress, selectProgressAccount, writeProgress } from './progress-storage.js';
 
 const warn = (...a) => { if(import.meta.env?.DEV) console.warn('[cloudsave]', ...a); };
@@ -83,7 +84,7 @@ export async function syncOnSignIn(session){
     let seen = false;
     const toastKey = expectedAccount ? `klarbase.cloudToast.${expectedAccount}` : 'klarbase.cloudToast';
     try { seen = sessionStorage.getItem(toastKey) === '1'; sessionStorage.setItem(toastKey, '1'); } catch {}
-    if(!seen) ctx.toast('Progress saved to your account ✓');
+    if(!seen) ctx.toast(t('Progress saved to your account ✓', '游戏进度已同步到账号 ✓'));
   } catch(e){ warn('sync failed', e); }
 }
 

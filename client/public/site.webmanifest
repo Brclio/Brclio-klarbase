@@ -1,7 +1,8 @@
 {
-  "name": "Klarbase — tiny isles, clever paths",
+  "lang": "zh-CN",
+  "name": "Klarbase — 小小浮岛，步步有巧思",
   "short_name": "Klarbase",
-  "description": "A cozy browser puzzle game of floating isles. Play, build your own, and share them.",
+  "description": "一款轻松的浮岛解谜游戏。来挑战关卡，建造并分享你自己的浮岛。",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

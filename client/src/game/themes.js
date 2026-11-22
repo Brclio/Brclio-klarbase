@@ -1,3 +1,5 @@
+import { gameText } from '../i18n/game.js';
+
 // Theme art direction. A theme is pure presentation: palette, sky, light,
 // particles, critters and the ambient chord. It never changes the rules
 // (convention: the author owns the layout, the world owns the light).
@@ -84,7 +86,13 @@ export const THEMES = {
 };
 
 // T.id = the theme's key, so per-theme art tables (biome, fauna) can look it up.
-for(const [id, t] of Object.entries(THEMES)) t.id = id;
+for(const [id, theme] of Object.entries(THEMES)){
+  theme.id = id;
+  for(const key of ['label', 'chapter', 'blurb']){
+    const english = theme[key];
+    Object.defineProperty(theme, key, { enumerable:true, get:() => gameText(english) });
+  }
+}
 
 export const PORTAL_COLORS = { p:'#4ff0ff', q:'#ff72d8', r:'#a6ff5c' };   // r = arch C (maps only)
 export const themeOf = name => THEMES[name] || THEMES.jungle;

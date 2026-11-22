@@ -9,7 +9,10 @@ import {
 import { themeOf, PORTAL_COLORS } from './game/themes.js';
 import { sfx } from './game/audio.js';
 import { track } from './analytics.js';   // hook(analytics)
-import { GUIDE } from './buildguide.js';
+import { guideFor } from './buildguide.js';
+import { getLanguage, t, onLanguageChange } from './i18n.js';
+import { gameText, isleName } from './i18n/game.js';
+import { panelLabels, builderMessage } from './i18n/builder.js';
 import { propThumb, thumbKind } from './game/thumbs.js';
 import { BRCLIO_DEPLOYMENT, GITHUB_DEPLOYMENT, STATIC_DEPLOYMENT } from './deployment.js';
 import { signInProviders } from './auth.js';
@@ -30,7 +33,7 @@ const GLYPH = { ',':'🌼', '#':'🪨', 'T':'🌳', 'C':'📦', 'o':'◎', 'D':'
 const GRID_THUMB = new Set(['T', '#', ',', 'C', 'P', 'Y', 'B', 'u', '+']);
 const store = { get:(k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set:(k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-const template = () => ({ name:'My isle', theme:'jungle', rows:[
+const template = () => ({ name:t('My isle', '我的浮岛'), theme:'jungle', rows:[
   '-  .  .  G  .  .  -', '.  .  .  .  .  .  .', '.  .  ,  .  T  .  .', '.  .  .  .  .  .  .',
   '.  T  .  .  .  ,  .', '.  .  .  .  .  .  .', '-  .  .  S  .  .  -' ] });
 
@@ -94,6 +97,24 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     </div>
     <input type="file" id="bFile" accept="application/json,.json" hidden>`;
   const $ = s => root.querySelector(s);
+  // Capture only the panel template's own captions, before inserting any player content.
+  // On a language change update those text nodes in place, keeping canvas, selections and inputs.
+  const captions = [];
+  for(const el of root.querySelectorAll('label, button, span, option')){
+    if(el.firstChild?.nodeType !== Node.TEXT_NODE) continue;
+    const node = el.firstChild, english = node.nodeValue;
+    if(Object.hasOwn(panelLabels, english)) captions.push(() => { node.nodeValue = t(english, panelLabels[english]); });
+  }
+  const storeyLabel = $('#bStoreys').previousElementSibling;
+  const mapEnglish = storeyLabel.textContent;
+  captions.push(() => {
+    storeyLabel.textContent = t(mapEnglish, `群岛地图 · 最多 ${MAX_STOREYS} 座浮岛，以拱门相连`);
+    $('#bGuide').title = t('Every tile, its rules and how to use it', '认识每种地块，查看规则与设计示例');
+    $('#bAuthor').placeholder = t('your GitHub username', '你的 GitHub 用户名');
+    for(const [i, isle] of CURATED_ISLES.entries()){
+      $('#bTemplate').options[i + 2].textContent = t(`Remix: ${isle.name}`, `改编 · ${isleName(isle)}`);
+    }
+  });
   const canvas = $('#gridCanvas'), g2 = canvas.getContext('2d');
   $('#bAuthor').value = store.get('klarbase.v2.ghuser', '');
 
@@ -101,11 +122,16 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
   const tools = $('#bTools');
   for(const [id, ico, label] of TOOLS){
     const b = document.createElement('button'); b.className = 'tool'; b.dataset.tool = id;
-    b.innerHTML = `<span class="ico">${ico}</span><small>${label}</small>`; b.setAttribute('aria-label', label); b.dataset.ico = ico; b.title = label + (GUIDE[id] ? ' — ' + GUIDE[id].summary : '') + (id === 'ramp' ? ' (click again or press R to turn)' : id === 'vent' ? ' (click again to turn the gust)' : '');
+    b.innerHTML = `<span class="ico">${ico}</span><small>${label}</small>`; b.dataset.ico = ico;
+    captions.push(() => {
+      const name = gameText(label), summary = guideFor(id)?.summary;
+      b.querySelector('small').textContent = name; b.setAttribute('aria-label', name);
+      b.title = name + (summary ? ' · ' + summary : '') + (id === 'ramp' ? t(' (click again or press R to turn)', '（再点一次或按 R 转向）') : id === 'vent' ? t(' (click again to turn the gust)', '（再点一次调整风向）') : '');
+    });
     b.onclick = () => { if(id === 'ramp' && tool === 'ramp') rampDir = (rampDir + 1) % 4; if(id === 'vent' && tool === 'vent') ventDir = (ventDir + 1) % 4; tool = id; syncTools(); sfx.ui(); };
     tools.appendChild(b);
   }
-  if(import.meta.env.DEV) for(const [id, , label] of TOOLS) if(!GUIDE[id]) console.warn(`[klarbase] "${label}" has no How to build entry (buildguide.js)`);
+  if(import.meta.env.DEV) for(const [id, , label] of TOOLS) if(!guideFor(id)) console.warn(`[klarbase] "${label}" has no How to build entry (buildguide.js)`);
   $('#bGuide').onclick = () => openGuide && openGuide();
   const syncTools = () => {
     for(const b of tools.children){ b.classList.toggle('on', b.dataset.tool === tool); if(b.dataset.tool === 'ramp') b.firstChild.textContent = RAMP_ARROW[RAMP_DIRS[rampDir]]; if(b.dataset.tool === 'vent') b.firstChild.textContent = VENT_ARROW[VENT_DIRS[ventDir]]; }
@@ -115,6 +141,8 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
   for(const t of THEME_NAMES){
     const T = themeOf(t), c = document.createElement('button'); c.className = 'chip theme'; c.dataset.theme = t; c.title = T.blurb;
     c.innerHTML = `<i class="sw" style="background:linear-gradient(${T.sky[0]}, ${T.sky[1]} 42%, ${T.sky[2]} 58%, ${T.top} 58%, ${T.top} 76%, ${T.strata[0]} 76%)"></i>${T.label}`;
+    const themeLabel = c.lastChild;
+    captions.push(() => { c.title = T.blurb; themeLabel.nodeValue = T.label; });
     c.onclick = () => { draft.theme = t; changed(); }; themes.appendChild(c);
   }
 
@@ -136,14 +164,14 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
       ico.classList.toggle('thumb', !!th); ico.style.backgroundImage = th ? `url(${th.url})` : '';
       if(th) ico.textContent = ''; else if(!ico.textContent) ico.textContent = b.dataset.ico;
     }
-    $('#bBiome').innerHTML = `<div class="biome-row">${BIOME.map(([id, name]) => thumbs.has(id) ? `<img src="${thumbs.get(id).url}" alt="${name}" title="${name} in ${T.label}">` : '').join('')}</div><p>${esc(T.blurb)}</p>`;
+    $('#bBiome').innerHTML = `<div class="biome-row">${BIOME.map(([id, name]) => thumbs.has(id) ? `<img src="${thumbs.get(id).url}" alt="${gameText(name)}" title="${t(`${name} in ${T.label}`, `${T.label}的${gameText(name)}`)}">` : '').join('')}</div><p>${esc(T.blurb)}</p>`;
     draw();
   }
   const queueThumbs = () => { clearTimeout(thumbT); thumbT = setTimeout(refreshThumbs, 30); };
   // The gut call (K3): saved in the isle file as `tier`; players' results take over as plays come in.
   const tiers = $('#bTiers');
   for(const t of [{ id:'', name:'Not sure' }, ...TIERS]){
-    const c = document.createElement('button'); c.className = 'chip'; c.dataset.tier = t.id; c.textContent = t.name;
+    const c = document.createElement('button'); c.className = 'chip'; c.dataset.tier = t.id; captions.push(() => { c.textContent = t.id ? gameText(t.name) : gameText('Not sure'); });
     c.onclick = () => { if(t.id) draft.tier = t.id; else delete draft.tier; store.set('klarbase.v2.draft', draft); syncTiers(); showDifficulty(); sfx.ui(); };
     tiers.appendChild(c);
   }
@@ -198,9 +226,12 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
   function roundRect(g, x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
   // ---- change pipeline: grid -> draft -> code/preview/verdict ----
-  let previewT = 0, verdictT = 0;
+  let previewT = 0, verdictT = 0, statusCaption = null;
+  const status = (style, caption) => {
+    const el = $('#bStatus'); el.className = style; statusCaption = caption; el.textContent = caption();
+  };
   function changed({ fromCode = false } = {}){
-    draft.name = $('#bName').value.trim() || 'My isle';
+    draft.name = $('#bName').value.trim() || t('My isle', '我的浮岛');
     const d = docOf(); delete draft.rows; delete draft.storeys;
     if(d.storeys) draft.storeys = d.storeys; else draft.rows = d.rows;
     store.set('klarbase.v2.draft', draft);
@@ -220,14 +251,14 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     if(level.start != null){ world.pip.group.visible = true; world.reset(initialState(level)); } else world.pip.group.visible = false;
   }
   function judge(budget){
-    const st = $('#bStatus'), { ok, errors, level } = parseIsle(docOf());
-    if(!ok){ verdict = null; st.className = 'status bad'; st.textContent = '✗ ' + [...new Set(errors.map(e => e.text))].slice(0, 2).join(' · '); return; }
+    const { ok, errors, level } = parseIsle(docOf());
+    if(!ok){ verdict = null; status('status bad', () => '✗ ' + [...new Set(errors.map(builderMessage))].slice(0, 2).join(' · ')); showDifficulty(); return; }
     const r = solveIsle(level, { maxStates:budget });
     verdict = r; audit = null; clearTimeout(auditT);
-    if(r.solvable){ st.className = 'status ok'; st.textContent = `✓ Solvable in ${r.par} moves` + (canSeeSolutions() ? ` · ${r.solution.length > 28 ? r.solution.slice(0, 28) + '…' : r.solution}` : signInProviders().length ? ' · sign in to see the route' : '');
+    if(r.solvable){ status('status ok', () => t(`✓ Solvable in ${r.par} moves`, `✓ 可解，最少 ${r.par} 步`) + (canSeeSolutions() ? ` · ${r.solution.length > 28 ? r.solution.slice(0, 28) + '…' : r.solution}` : signInProviders().length ? t(' · sign in to see the route', ' · 登录可查看路线') : ''));
       auditT = setTimeout(() => { audit = auditIsle(level, { maxStates:Math.min(budget, 200000) }); showDifficulty(); }, 60); }
-    else if(r.capped){ st.className = 'status'; st.textContent = '… big isle — press “Deep check” to verify'; }
-    else { st.className = 'status bad'; st.textContent = '✗ Not solvable yet — no path reaches a goal'; }
+    else if(r.capped){ status('status', () => t('… big isle — press “Deep check” to verify', '… 浮岛较大，请点击「深度检查」进一步验证')); }
+    else { status('status bad', () => t('✗ Not solvable yet — no path reaches a goal', '✗ 暂时无解，还没有通往终点的路线')); }
     showDifficulty();
   }
 
@@ -237,9 +268,16 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     const box = $('#bDiff');
     if(!verdict || !verdict.solvable || !audit){ box.style.display = 'none'; return; }
     box.style.display = '';
-    if(audit.capped){ box.innerHTML = `<div>Difficulty: too many positions to map live — press “Deep check”.</div>`; return; }
+    if(audit.capped){ box.textContent = t('Difficulty: too many positions to map live — press “Deep check”.', '状态太多，无法实时估算难度。请点击「深度检查」。'); return; }
     const d = difficultyScore({ tier:draft.tier, audit }), a = provisionalTier(audit);
     const warn = gutMismatch(draft.tier, audit), hints = harderHints(audit);
+    if(getLanguage() === 'zh-CN'){
+      box.innerHTML = `<div><span class="tier t-${d.tier.id}">${gameText(d.tier.name)} ${d.score}</span> · ${d.declared ? '由你评定' : '求解器估计'}${BRCLIO_DEPLOYMENT ? '' : ' · 随游玩结果调整'}</div>
+        <div style="font-weight:600">求解器探索了 ${audit.states.toLocaleString('zh-CN')} 个状态，找到 ${audit.traps} 处陷阱，${audit.routes > 999 ? '超过 999' : audit.routes} 条最短路线。径直走向星星${audit.greedy ? '可以' : '不能'}通关，估计难度为<b>${gameText(a.name)}</b>。</div>
+        ${warn ? `<div class="warn">⚠ ${esc(builderMessage(warn))}</div>` : ''}
+        ${hints.length ? `<div>想提高难度？<ul>${hints.map(h => `<li>${esc(builderMessage(h))}</li>`).join('')}</ul></div>` : ''}`;
+      return;
+    }
     box.innerHTML = `<div><span class="tier t-${d.tier.id}">${d.tier.name} ${d.score}</span> · ${d.declared ? 'your gut call' : 'estimated from the solver'} · settles as people play</div>
       <div style="font-weight:600">Solver audit: ${audit.states.toLocaleString()} positions · ${audit.traps} trap${audit.traps === 1 ? '' : 's'} · ${audit.routes > 999 ? 'many' : audit.routes} shortest route${audit.routes === 1 ? '' : 's'} · walking straight at the star ${audit.greedy ? 'wins' : 'fails'} → reads <b>${a.name}</b></div>
       ${warn ? `<div class="warn">⚠ ${esc(warn)}</div>` : ''}
@@ -258,7 +296,7 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
   $('#bTemplate').onchange = e => {
     const v = e.target.value; if(!v) return;
     const src = v === 'blank' ? template() : CURATED_ISLES.find(i => i.id === v);
-    draft = { name:v === 'blank' ? 'My isle' : src.name + ' remix', theme:src.theme, ...(src.storeys ? { storeys:src.storeys } : { rows:src.rows.slice() }) };
+    draft = { name:v === 'blank' ? src.name : t(src.name + ' remix', isleName(src) + '改编版'), theme:src.theme, ...(src.storeys ? { storeys:src.storeys } : { rows:src.rows.slice() }) };
     loadDraft(draft); $('#bName').value = draft.name; e.target.value = ''; changed();
   };
   let codeT = 0;
@@ -268,56 +306,59 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
       const rows = $('#bCode').value.split('\n').map(s => s.trim()).filter(Boolean);
       const d = docOf(); if(d.storeys) d.storeys[cur].rows = rows; else d.rows = rows;
       const r = parseIsle(d);
-      if(!r.level){ $('#bStatus').className = 'status bad'; $('#bStatus').textContent = '✗ ' + r.errors[0].text; return; }
+      if(!r.level){ status('status bad', () => '✗ ' + builderMessage(r.errors[0])); return; }
       grid = storeys[cur].grid = fromRows(rows); changed({ fromCode:true });
     }, 350);
   });
-  $('#bCheck').onclick = () => { $('#bStatus').textContent = 'checking…'; setTimeout(() => judge(300000), 30); };
+  $('#bCheck').onclick = () => { status('status', () => t('checking…', '检查中…')); setTimeout(() => judge(300000), 30); };
   $('#bTest').onclick = () => {
     const doc = docOf(), { ok, errors } = parseIsle(doc);
-    if(!ok) return toast(errors[0].text, true);
+    if(!ok) return toast(builderMessage(errors[0]), true);
     onTest({ ...doc, par:verdict && verdict.solvable ? verdict.par : 0, solution:verdict && verdict.solvable ? verdict.solution : '' });
   };
   if(!STATIC_DEPLOYMENT) $('#bShare').onclick = async () => {
-    if(GITHUB_DEPLOYMENT && !signInProviders().length) return toast('Sign-in is unavailable', true);
-    if(!getSession()) return toast('Sign in (top right) to share online', true);
+    if(GITHUB_DEPLOYMENT && !signInProviders().length) return toast(t('Sign-in is unavailable', '暂时无法登录'), true);
+    if(!getSession()) return toast(t('Sign in (top right) to share online', '请先在右上角登录，再在线分享'), true);
     try {
       const r = await api('/puzzles', { method:'POST', body:{ title:draft.name, puzzle:docOf() } });
       const url = `${location.origin}/i/${r.hash}`;
       await navigator.clipboard.writeText(url).catch(() => {});
       track('share_online');   // hook(analytics)
-      toast(r.deduped ? 'Already shared — link copied' : 'Shared! Link copied to clipboard');
-    } catch(e){ toast(e.validation ? e.validation[0].text : e.message, true); }
+      toast(r.deduped ? t('Already shared — link copied', '这座浮岛已分享，链接已复制') : t('Shared! Link copied to clipboard', '分享成功，链接已复制'));
+    } catch(e){ toast(builderMessage(e.validation ? e.validation[0] : e.message), true); }
   };
+  let contributionCaption = null;
   $('#bGithub').onclick = () => {
     const author = $('#bAuthor').value.trim().replace(/^@/, '');
     store.set('klarbase.v2.ghuser', author);
     const note = $('#bGithubNote'); note.style.display = 'block';
     // The note sits at the panel's foot — scroll it into view or the button looks dead.
     const show = () => note.scrollIntoView({ block:'nearest' });
-    if(!author){ note.innerHTML = 'Add your GitHub username — it becomes your credit on the isle.'; show(); return; }
+    const setNote = caption => { contributionCaption = caption; note.innerHTML = caption(); };
+    if(!author){ setNote(() => t('Add your GitHub username — it becomes your credit on the isle.', '请先填写 GitHub 用户名，浮岛会用它为你署名。')); show(); return; }
     const file = toCommunityFile(docOf(), author);
     const existing = new Map([...CURATED_ISLES.map(i => [isleHash(i), `official isle “${i.name}”`]), ...communityHashes()]);
     const v = checkCommunityIsle(file, { existing });
-    if(!v.ok){ note.innerHTML = '<b>Not ready yet — the repo checks would reject it:</b><br>• ' + v.errors.map(esc).join('<br>• '); show(); return; }
+    if(!v.ok){ setNote(() => t('<b>Not ready yet — the repo checks would reject it:</b><br>• ', '<b>还不能投稿，请先修改以下问题。</b><br>• ') + v.errors.map(e => esc(builderMessage(e))).join('<br>• ')); show(); return; }
     const text = JSON.stringify(file, null, 2) + '\n', path = `isles/community/${author}/${file.id}.json`;
-    const passed = `✓ Passes every check (par ${file.par}, uses ${v.report.mechanics.join(', ')}).<br>`;
-    const how = `<a href="${repoUrl}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">how to contribute</a>`;
+    const passed = () => t(`✓ Passes every check (par ${file.par}, uses ${v.report.mechanics.join(', ')}).<br>`, `✓ 已通过所有检查，最少 ${file.par} 步，用到了${v.report.mechanics.map(gameText).join('、')}。<br>`);
+    const how = () => `<a href="${repoUrl}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">${t('how to contribute', '投稿指南')}</a>`;
     // GitHub's new-file page prefills from the URL, signs the player in, forks for
     // non-collaborators and opens the PR — no OAuth on our side.
     const url = `${repoUrl}/new/main/isles/community/${author}?filename=${file.id}.json&value=${encodeURIComponent(text)}`;
     if(url.length <= MAX_GITHUB_URL){
-      note.innerHTML = passed + `<a class="btn small primary" style="text-decoration:none" href="${esc(url)}" target="_blank" rel="noopener">⇪ Open the pull request on GitHub</a><br>
-        It opens <code>${esc(path)}</code> prefilled — sign in, then “Commit changes…” → “Propose changes” → “Create pull request” (${how}).`;
-      note.querySelector('a.btn').addEventListener('click', () => track('propose_github'));   // hook(analytics)
+      setNote(() => passed() + `<a class="btn small primary" style="text-decoration:none" href="${esc(url)}" target="_blank" rel="noopener">${t('⇪ Open the pull request on GitHub', '⇪ 在 GitHub 发起合并请求')}</a><br>` +
+        t(`It opens <code>${esc(path)}</code> prefilled — sign in, then “Commit changes…” → “Propose changes” → “Create pull request” (${how()}).`,
+          `将打开预填的 <code>${esc(path)}</code>。在 GitHub 登录后依次点击 “Commit changes…” → “Propose changes” → “Create pull request”。见${how()}。`));
+      note.onclick = e => { if(e.target.closest('a.btn')) track('propose_github'); };   // hook(analytics)
       show(); return;
     }
     download(`${file.id}.json`, text); track('propose_github');   // hook(analytics)
-    note.innerHTML = passed + `Too big to prefill on GitHub, so it downloaded instead.
-      Add it to <code>${esc(path)}</code> and open a pull request — ${how}.`;
+    setNote(() => passed() + t(`Too big to prefill on GitHub, so it downloaded instead. Add it to <code>${esc(path)}</code> and open a pull request — ${how()}.`,
+        `地图较大，已下载文件。请把文件添加到 <code>${esc(path)}</code>，然后发起合并请求。见${how()}。`));
     show();
   };
-  $('#bExport').onclick = () => download(`${(draft.name || 'isle').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`,
+  $('#bExport').onclick = () => download(`${(draft.name || 'isle').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || 'isle'}.json`,
     JSON.stringify(docOf(), null, 2) + '\n');
   $('#bImport').onclick = () => $('#bFile').click();
   $('#bFile').onchange = e => {
@@ -325,10 +366,10 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     f.text().then(t => {
       try {
         const d = JSON.parse(t); const r = parseIsle(d);
-        if(!r.level) throw new Error(r.errors[0].text);
-        draft = { name:d.name || 'Imported isle', theme:d.theme || 'jungle', ...(d.storeys ? { storeys:d.storeys } : { rows:d.rows }), ...(TIERS.some(t => t.id === d.tier) ? { tier:d.tier } : {}) }; loadDraft(draft);
-        $('#bName').value = draft.name; changed(); toast('Isle imported');
-      } catch(err){ toast('Could not import: ' + err.message, true); }
+        if(!r.level) throw new Error(builderMessage(r.errors[0]));
+        draft = { name:d.name || t('Imported isle', '导入的浮岛'), theme:d.theme || 'jungle', ...(d.storeys ? { storeys:d.storeys } : { rows:d.rows }), ...(TIERS.some(t => t.id === d.tier) ? { tier:d.tier } : {}) }; loadDraft(draft);
+        $('#bName').value = draft.name; changed(); toast(t('Isle imported', '浮岛已导入'));
+      } catch(err){ toast(t('Could not import: ' + err.message, '无法导入。' + (err instanceof SyntaxError ? '请检查 JSON 格式。' : err.message)), true); }
     });
     e.target.value = '';
   };
@@ -339,16 +380,22 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
   // ---- storeys: tabs, add / remove, offset + altitude, gateway summary ----
   function syncStoreys(){
     const bar = $('#bStoreys');
-    bar.innerHTML = storeys.map((_, k) => `<button class="chip${k === cur ? ' on' : ''}" data-storey="${k}">Isle ${k + 1}</button>`).join('')
-      + (storeys.length < MAX_STOREYS ? '<button class="chip" data-storey="add">＋ Isle</button>' : '')
-      + (storeys.length > 1 ? `<button class="chip" data-storey="del">✕ Remove isle ${cur + 1}</button>` : '');
+    bar.innerHTML = storeys.map((_, k) => `<button class="chip${k === cur ? ' on' : ''}" data-storey="${k}">${t('Isle ', '浮岛 ')}${k + 1}</button>`).join('')
+      + (storeys.length < MAX_STOREYS ? `<button class="chip" data-storey="add">${t('＋ Isle', '＋ 添加浮岛')}</button>` : '')
+      + (storeys.length > 1 ? `<button class="chip" data-storey="del">${t('✕ Remove isle ', '✕ 移除浮岛 ')}${cur + 1}</button>` : '');
     $('#bAt').style.display = storeys.length > 1 || storeys[0].at.some(Boolean) ? '' : 'none';
     root.querySelectorAll('[data-at]').forEach(i => { if(document.activeElement !== i) i.value = storeys[cur].at[+i.dataset.at]; });
     // gateways: an arch letter whose two arches sit on different isles
     const { level } = parseIsle(docOf()), notes = [];
-    if(level) for(const [u, v] of Object.entries(level.twin)) if(+u < v && level.cells[u].gateway)
-      notes.push(`Arch ${{ p:'A', q:'B', r:'C' }[level.cells[u].ch]} is a gateway: isle ${level.sid[u] + 1} ↔ isle ${level.sid[v] + 1}`);
-    if(level && level.pans) notes.push(level.sid[level.pans.a[0]] === level.sid[level.pans.b[0]] ? 'Sky Scales: pans A and B share one vine' : `Sky Scales across isles ${level.sid[level.pans.a[0]] + 1} and ${level.sid[level.pans.b[0]] + 1}`);
+    if(level) for(const [u, v] of Object.entries(level.twin)) if(+u < v && level.cells[u].gateway){
+      const arch = { p:'A', q:'B', r:'C' }[level.cells[u].ch], a = level.sid[u] + 1, b = level.sid[v] + 1;
+      notes.push(t(`Arch ${arch} is a gateway: isle ${a} ↔ isle ${b}`, `拱门 ${arch} 连通浮岛 ${a} 与浮岛 ${b}`));
+    }
+    if(level?.pans){
+      const a = level.sid[level.pans.a[0]] + 1, b = level.sid[level.pans.b[0]] + 1;
+      notes.push(a === b ? t('Sky Scales: pans A and B share one vine', '天空天平的 A、B 秤盘由同一根藤蔓相连')
+        : t(`Sky Scales across isles ${a} and ${b}`, `天空天平连接浮岛 ${a} 与浮岛 ${b}`));
+    }
     $('#bGates').style.display = notes.length ? '' : 'none'; $('#bGates').textContent = notes.join(' · ');
   }
   $('#bStoreys').onclick = e => {
@@ -372,6 +419,14 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     if(e.key === 'r' || e.key === 'R'){ rampDir = (rampDir + 1) % 4; tool = 'ramp'; syncTools(); }
   });
   addEventListener('resize', () => draw());
+  const refreshLanguage = () => {
+    for(const update of captions) update();
+    if(statusCaption) $('#bStatus').textContent = statusCaption();
+    if(contributionCaption) $('#bGithubNote').innerHTML = contributionCaption();
+    if(thumbTheme !== null) refreshThumbs();
+    showDifficulty(); syncStoreys();
+  };
+  refreshLanguage(); onLanguageChange(refreshLanguage);
   syncTools();
 
   return {

@@ -19,6 +19,8 @@ import { createSky, nightAmount, sunDirection, CYCLE } from './sky.js';
 import { createWild } from './wild.js';
 import { createAtlas } from './atlas.js';
 import { rise, easeIn } from './spring.js';
+import { t, onLanguageChange } from '../i18n.js';
+import { regionName, wildName } from '../i18n/atlas.js';
 import { loadMap, saveMap } from './persist.js';
 
 const RISE = 6.5;                       // how far below its place a chunk starts (under the cloud tops)
@@ -82,7 +84,7 @@ export function mountMap(ctx){
     hudLit();
   }
   const litCount = () => Object.entries(ctx.progress).filter(([k, v]) => /^[ocdw]:/.test(k) && v && v.stars > 0).length;
-  const hudLit = () => { $('#mapLit').textContent = `✦ lit ${litCount()}`; };
+  const hudLit = () => { $('#mapLit').textContent = `✦ ${t('lit', '已点亮')} ${litCount()}`; };
 
   /* ---------------- streaming ---------------- */
   const chunks = new Map(), queue = [];
@@ -177,13 +179,16 @@ export function mountMap(ctx){
 
   /* ---------------- arriving: chunks, region, shrine ---------------- */
   let region = null, ambTheme = null, lastSave = 0, lastUrl = 0, saveTimer = 0;
+  function updateRegionText(){
+    if(region) $('#mapRegion').textContent = `${regionName(region.name)} · ${themeOf(region.theme).label}`;
+  }
   function onArrive(quiet, jumped){
     const k = keyOf(P.x, P.z), ncx = Math.floor(P.x / CHUNK), ncz = Math.floor(P.z / CHUNK);
     if(ncx !== pcx || ncz !== pcz || !planned || jumped){ pcx = ncx; pcz = ncz; plan(); }
     for(let dz = -1; dz <= 1; dz++) for(let dx = -1; dx <= 1; dx++) explored.add((pcx + dx) + ',' + (pcz + dz));
     const r = regionAt(ATLAS_SEED, P.x, P.z), site = r.site.join(',');
     if(!region || region.site.join(',') !== site){
-      region = r; $('#mapRegion').textContent = `${r.name} · ${themeOf(r.theme).label}`;
+      region = r; updateRegionText();
       if(!quiet || !ambTheme) regionToast(r);
       if(r.theme !== ambTheme){ const T = themeOf(r.theme); ambTheme = r.theme; ambient(T); setScale(T.scale); pip.setScarf(T.accent); ctx.setAccent(r.theme); }
       ctx.track('map_region', { theme:r.theme });
@@ -205,7 +210,7 @@ export function mountMap(ctx){
   }
   let toastTimer = 0;
   function regionToast(r){
-    const el = $('#mapToast'); el.textContent = r.name; el.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 2600);
+    const el = $('#mapToast'); el.textContent = regionName(r.name); el.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 2600);
   }
   function saveSoon(){
     const now = performance.now();
@@ -222,24 +227,25 @@ export function mountMap(ctx){
     if(s.kind === 'wild'){
       if(!res) return null;
       const doc = res.doc;
-      return { key:'w:' + s.x + ',' + s.z, statKey:'w/' + s.x + ',' + s.z, doc, name:doc.name, theme:doc.theme, par:res.par, solution:res.solution, tier:res.tier, sub:'Sky Atlas · ' + rn, wild:true };
+      return { key:'w:' + s.x + ',' + s.z, statKey:'w/' + s.x + ',' + s.z, doc, get name(){ return wildName(doc.name); }, theme:doc.theme, par:res.par, solution:res.solution, tier:res.tier, atlasRegion:rn, get sub(){ return t('Sky Atlas', '天空星图') + ' · ' + regionName(rn); }, wild:true };
     }
     return ctx.entryFor(s.key);
   }
   function showCard(s){
     cardFor = s;
     let res; if(s.kind === 'wild'){ res = wild.peek(s.x, s.z); if(res === undefined) wild.get(s.x, s.z).then(() => { if(cardFor === s && !disposed) showCard(s); }); }
-    const e = s.kind === 'wild' && res === undefined ? null : entryOf(s, res), rn = regionAt(ATLAS_SEED, s.x, s.z).name;
-    const kind = s.kind === 'official' ? 'Official isle' : s.kind === 'community' ? 'Community isle' : s.kind === 'daily' ? 'Daily isle' : 'Wild isle';
+    const e = s.kind === 'wild' && res === undefined ? null : entryOf(s, res), rn = regionName(regionAt(ATLAS_SEED, s.x, s.z).name);
+    const kind = { official:t('Official isle', '官方浮岛'), community:t('Community isle', '社区浮岛'),
+      daily:t('Daily isle', '每日浮岛'), wild:t('Wild isle', '野生浮岛') }[s.kind];
     let body;
-    if(s.kind === 'wild' && res === undefined) body = `<div class="mc-kind">${kind} · ${esc(rn)}</div><div class="mc-name">Listening…</div><div class="mc-meta">the shrine hums</div><div class="row"><button class="btn" data-mc="no">Not now</button></div>`;
-    else if(!e) body = `<div class="mc-kind">Quiet shrine · ${esc(rn)}</div><div class="mc-name">Nothing stirs here</div><div class="mc-lock">This shrine is resting. Another one is never far.</div><div class="row"><button class="btn" data-mc="no">Okay</button></div>`;
+    if(s.kind === 'wild' && res === undefined) body = `<div class="mc-kind">${kind} · ${esc(rn)}</div><div class="mc-name">${t('Listening…', '静听中…')}</div><div class="mc-meta">${t('the shrine hums', '神龛发出轻轻的嗡鸣')}</div><div class="row"><button class="btn" data-mc="no">${t('Not now', '暂时离开')}</button></div>`;
+    else if(!e) body = `<div class="mc-kind">${t('Quiet shrine', '沉睡的神龛')} · ${esc(rn)}</div><div class="mc-name">${t('Nothing stirs here', '这里静悄悄的')}</div><div class="mc-lock">${t('This shrine is resting. Another one is never far.', '这座神龛正在休息，附近还有其他神龛。')}</div><div class="row"><button class="btn" data-mc="no">${t('Okay', '好')}</button></div>`;
     else {
       const stars = ctx.progress[e.key]?.stars || 0, lock = ctx.lockOf(e);
       body = `<div class="mc-kind">${kind} · ${esc(s.kind === 'wild' ? rn : e.sub || rn)}</div><div class="mc-name">${esc(e.name)}</div>
-        <div class="mc-meta">${ctx.badge(e)}<span>par ${e.par || '?'}</span>${ctx.starsHtml(stars)}${stars ? '<span title="beacon lit">✦</span>' : ''}</div>
+        <div class="mc-meta">${ctx.badge(e)}<span>${t('par', '最少步数')} ${e.par || '?'}</span>${ctx.starsHtml(stars)}${stars ? `<span title="${t('beacon lit', '信标已点亮')}">✦</span>` : ''}</div>
         ${lock ? `<div class="mc-lock">🔒 ${esc(lock)}</div>` : ''}
-        <div class="row">${lock ? '' : '<button class="btn primary" data-mc="go">▶ Play</button>'}<button class="btn" data-mc="no">Not now</button></div>`;
+        <div class="row">${lock ? '' : `<button class="btn primary" data-mc="go">▶ ${t('Play', '开始游戏')}</button>`}<button class="btn" data-mc="no">${t('Not now', '暂时离开')}</button></div>`;
       s.entry = e;
     }
     card.innerHTML = body; card.classList.add('on');
@@ -248,7 +254,10 @@ export function mountMap(ctx){
   function playHere(){
     const s = cardFor; if(!s || !s.entry) return;
     saveMap(P, explored, saved.extra); sfx.ui();
-    ctx.play({ ...s.entry, fromMap:{ x:s.x, z:s.z } });
+    // A map visit adds a return location and keeps the catalogue's live language getters.
+    const entry = Object.create(s.entry);
+    entry.fromMap = { x:s.x, z:s.z };
+    ctx.play(entry);
   }
   // onclick, not addEventListener: #mapCard outlives this mount, and a stacked listener would keep every disposed map alive
   card.onclick = e => { const b = e.target.closest('[data-mc]'); if(!b) return; if(b.dataset.mc === 'go') playHere(); else { skipCard = P.x + ',' + P.z; hideCard(); } };
@@ -259,6 +268,11 @@ export function mountMap(ctx){
   $('#mapAtlasBtn').onclick = () => { sfx.ui(); atlas.toggle(); };
   $('#mapTurn').onclick = () => { world.turn(1); sfx.ui(); };
   $('#mapBack').onclick = () => ctx.nav('/');
+  const stopLanguageUpdates = onLanguageChange(() => {
+    updateRegionText(); hudLit(); atlas.refreshLanguage();
+    if(region && $('#mapToast').classList.contains('on')) $('#mapToast').textContent = regionName(region.name);
+    if(cardFor) showCard(cardFor);
+  });
   const onCloudMap = e => { const m = e.detail; if(m && Array.isArray(m.explored)){ for(const k of m.explored) explored.add(k); atlas.redraw(); } };
   window.addEventListener('klarbase:map', onCloudMap);
 
@@ -348,6 +362,7 @@ export function mountMap(ctx){
     clearTimeout(toastTimer); if(saveTimer){ clearTimeout(saveTimer); saveTimer = 0; }
     saveMap(P, explored, saved.extra);
     window.removeEventListener('klarbase:map', onCloudMap);
+    stopLanguageUpdates();
     world.setExternal(null);
     for(const rec of chunks.values()){ if(rec.chunk){ scene.remove(rec.chunk.group); rec.chunk.dispose(); } }
     chunks.clear(); queue.length = 0; if(cur && cur.gen) cur.gen.return(); cur = null;

@@ -1,10 +1,15 @@
 // Community Guidelines — the rules for comments and shared isles.
-import { UPDATED, contactLine, updatedLine, otherPages } from './shared.js';
+import { STATIC_DEPLOYMENT } from '../deployment.js';
+import { UPDATED, REPO, esc, contactLine, updatedLine, otherPages } from './shared.js';
 
 export const title = 'Community Guidelines';
 export const updated = UPDATED;
 
-export const html = () => `
+export const html = () => STATIC_DEPLOYMENT ? `
+${updatedLine('2026-11-22')}
+<p>Be respectful, keep feedback on topic and keep personal information out of public posts. Let other players discover solutions themselves. A spoiler-free hint is welcome.</p>
+<p>To propose an isle or report a problem, follow the <a href="${esc(REPO)}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">contribution guide</a> or use the <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">GitHub issue tracker</a>.</p>
+${otherPages}` : `
 ${updatedLine(UPDATED)}
 <p>Klarbase is a cozy place. These few rules keep it that way. They apply to comments, isle names and anything else you share. They are part of the <a href="/terms" data-go="/terms">Terms of Use</a>.</p>
 

@@ -11,6 +11,8 @@ import { sfx } from './game/audio.js';
 import { track } from './analytics.js';   // hook(analytics)
 import { GUIDE } from './buildguide.js';
 import { propThumb, thumbKind } from './game/thumbs.js';
+import { BRCLIO_DEPLOYMENT, GITHUB_DEPLOYMENT, STATIC_DEPLOYMENT } from './deployment.js';
+import { signInProviders } from './auth.js';
 
 export const TOOLS = [
   ['.', '▢', 'Ground'], [',', '🌼', 'Flowers'], ['#', '🪨', 'Rock'], ['T', '🌳', 'Tree'], ['~', '🌊', 'Water'], ['*', '🧊', 'Ice'],
@@ -78,10 +80,10 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     <div class="row-btns">
       <button class="btn primary" id="bTest">▶ Test it</button>
       <button class="btn" id="bCheck">✓ Deep check</button>
-      <button class="btn" id="bShare">☁ Share online</button>
+      ${STATIC_DEPLOYMENT ? '' : '<button class="btn" id="bShare">☁ Share online</button>'}
     </div>
     <div class="field"><label>Isle code — the text format (edit me too)</label><textarea id="bCode" spellcheck="false"></textarea></div>
-    <div class="field"><label>Contribute to the official repo</label>
+    <div class="field"><label>${BRCLIO_DEPLOYMENT ? 'Contribute on GitHub' : 'Contribute to the official repo'}</label>
       <input id="bAuthor" placeholder="your GitHub username">
       <div class="row-btns" style="margin-top:6px">
         <button class="btn small" id="bGithub">⇪ Propose on GitHub</button>
@@ -222,7 +224,7 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     if(!ok){ verdict = null; st.className = 'status bad'; st.textContent = '✗ ' + [...new Set(errors.map(e => e.text))].slice(0, 2).join(' · '); return; }
     const r = solveIsle(level, { maxStates:budget });
     verdict = r; audit = null; clearTimeout(auditT);
-    if(r.solvable){ st.className = 'status ok'; st.textContent = `✓ Solvable in ${r.par} moves` + (canSeeSolutions() ? ` · ${r.solution.length > 28 ? r.solution.slice(0, 28) + '…' : r.solution}` : ' · sign in to see the route');
+    if(r.solvable){ st.className = 'status ok'; st.textContent = `✓ Solvable in ${r.par} moves` + (canSeeSolutions() ? ` · ${r.solution.length > 28 ? r.solution.slice(0, 28) + '…' : r.solution}` : signInProviders().length ? ' · sign in to see the route' : '');
       auditT = setTimeout(() => { audit = auditIsle(level, { maxStates:Math.min(budget, 200000) }); showDifficulty(); }, 60); }
     else if(r.capped){ st.className = 'status'; st.textContent = '… big isle — press “Deep check” to verify'; }
     else { st.className = 'status bad'; st.textContent = '✗ Not solvable yet — no path reaches a goal'; }
@@ -276,7 +278,8 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     if(!ok) return toast(errors[0].text, true);
     onTest({ ...doc, par:verdict && verdict.solvable ? verdict.par : 0, solution:verdict && verdict.solvable ? verdict.solution : '' });
   };
-  $('#bShare').onclick = async () => {
+  if(!STATIC_DEPLOYMENT) $('#bShare').onclick = async () => {
+    if(GITHUB_DEPLOYMENT && !signInProviders().length) return toast('Sign-in is unavailable', true);
     if(!getSession()) return toast('Sign in (top right) to share online', true);
     try {
       const r = await api('/puzzles', { method:'POST', body:{ title:draft.name, puzzle:docOf() } });

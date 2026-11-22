@@ -1,5 +1,6 @@
 // Licences & credits. Library licences were read from each package's package.json
 // (node_modules, versions as pinned in this release) — re-check when dependencies change.
+import { BRCLIO_DEPLOYMENT } from '../deployment.js';
 import { UPDATED, REPO, esc, updatedLine, otherPages } from './shared.js';
 
 export const title = 'Licences';
@@ -7,7 +8,7 @@ export const updated = UPDATED;
 
 const BROWSER = [
   ['three', '0.170', 'MIT', 'https://github.com/mrdoob/three.js'],
-  ['better-auth (client)', '1.4.22', 'MIT', 'https://github.com/better-auth/better-auth'],
+  ['better-auth (upstream sign-in client)', '1.4.22', 'MIT', 'https://github.com/better-auth/better-auth'],
   ['posthog-js (only loaded when analytics is on)', '1.447', 'Apache-2.0 AND MIT', 'https://github.com/PostHog/posthog-js'],
 ];
 const SERVER = [
@@ -21,12 +22,12 @@ const list = rows => `<ul>${rows.map(([n, v, l, u]) => `<li><a href="${esc(u)}" 
 export const html = () => `
 ${updatedLine(UPDATED)}
 <h3>Klarbase</h3>
-<p>The game, its engine, the tools and the isles in the repository are released under the <a href="${esc(REPO)}/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. Isles contributed by players are released under the same licence and credit their makers. Source: <a href="${esc(REPO)}" target="_blank" rel="noopener">github.com/TanmoyP/klarbase</a>.</p>
+<p>The game, its engine, the tools and the isles in the repository are released under the <a href="${esc(REPO)}/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. Isles contributed by players are released under the same licence and credit their makers. Original project by <a href="https://github.com/TanmoyP/klarbase" target="_blank" rel="noopener">TanmoyP and Klarbase contributors</a>.</p>
 
 <h3>Libraries sent to your browser</h3>
 ${list(BROWSER)}
 
-<h3>Libraries on the server</h3>
+<h3>${BRCLIO_DEPLOYMENT ? 'Libraries in the upstream Node.js server' : 'Libraries on the server'}</h3>
 ${list(SERVER)}
 <p>Each of these has its own dependencies, listed with their licences in the repository's lock file.</p>
 
@@ -37,5 +38,5 @@ ${list(SERVER)}
 <p>All art and audio are generated in code. There are no model, texture, image or audio files.</p>
 
 <h3>Fonts</h3>
-<p>Fredoka and Nunito, both under the SIL Open Font License 1.1, are bundled with the game (via the @fontsource packages) and served from klarbase.dev.</p>
+<p>Fredoka and Nunito, both under the SIL Open Font License 1.1, are bundled with the game (via the @fontsource packages) and served by this site.</p>
 ${otherPages}`;

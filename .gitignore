@@ -5,6 +5,10 @@ dist/
 !.env.example
 *.log
 .DS_Store
+.wrangler/
+.dev.vars
+.dev.vars.*
+*.pem
 server/prisma/migrations/dev*
 
 # local Claude Code / editor settings

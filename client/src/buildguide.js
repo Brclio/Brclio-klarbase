@@ -3,6 +3,8 @@
 // restate isles/README.md "The rules" for builders; if a rule changes there, it
 // changes here too. Static text only — no solutions, no routes.
 
+import { BRCLIO_DEPLOYMENT, STATIC_DEPLOYMENT } from './deployment.js';
+
 // code: the file character(s) · summary: one line (also the palette tooltip)
 // what: the behaviour · meta: what the file stores, limits · tip: how to use it
 // tags: badges — 'blocks' | 'walk' | 'push' | 'space' | 'maps'
@@ -183,7 +185,7 @@ export function buildGuideHtml(tools){
       <li>Paint one <b>Start</b> 🐣 and a <b>Goal</b> ⭐. Click or drag to paint; right-click (or the Erase tool) erases.</li>
       <li>Shape the isle with ground, sky and heights, then add one mechanic and build the puzzle around it.</li>
       <li>Watch the <b>verdict</b> under the grid: solvable or not, par (the fewest moves), and how hard it looks.</li>
-      <li><b>▶ Test it</b> to play your own isle, then <b>Share online</b> or <b>Propose on GitHub</b>.</li></ol>`, true)}
+      <li><b>▶ Test it</b> to play your own isle, then ${STATIC_DEPLOYMENT ? '' : '<b>Share online</b> or '}<b>Propose on GitHub</b>.</li></ol>`, true)}
     ${section('How the grid works', `<p>Each cell is one tile: a character plus an optional <b>height</b> digit 0–5 (<code>.2</code> = ground two levels up).
       Row 0 is north (far from the camera), column 0 is west. Isles are 3–14 tiles wide and deep (the <b>Size</b> buttons).</p>
       <p>Pip walks onto floor at the same height, hops <b>down</b> one level, and climbs only with a <b>ramp</b>. A one-level drop is a one-way door.</p>${els(GROUPS[0][1])}`)}
@@ -196,13 +198,13 @@ export function buildGuideHtml(tools){
       <li>Players press <b>M</b> to see the whole map.</li></ul>`)}
     ${section('Isle settings', `<ul><li><b>Name</b>: 3–40 letters, numbers or simple punctuation.</li>
       <li><b>Theme</b>: the look of the isle and sky. It never changes the rules.</li>
-      <li><b>Difficulty</b>: your gut call, Breeze → Mythic. It starts the score, and real players’ results take over as they play (after about 20 plays it’s mostly theirs). The builder warns if your call and the solver disagree a lot.</li>
+      <li><b>Difficulty</b>: your gut call, Breeze → Mythic. ${BRCLIO_DEPLOYMENT ? 'It sets the difficulty shown to players.' : 'It starts the score, and real players’ results take over as they play (after about 20 plays it’s mostly theirs).'} The builder warns if your call and the solver disagree a lot.</li>
       <li><b>Start from</b>: a fresh meadow, or remix any official isle to see how it’s made.</li></ul>`)}
     ${section('Verdict, par & testing', `<ul><li>The <b>verdict</b> re-solves your isle as you paint (up to 60,000 positions). <b>Deep check</b> searches up to 300,000.</li>
       <li><b>Par</b> is the fewest moves that win. Players earn ★★★ by matching it.</li>
       <li>The difficulty panel shows how the solver sees your isle, plus <b>make it harder</b> ideas (block the straight line, add risky steps, narrow it to one clever route).</li>
       <li><b>▶ Test it</b> plays your draft. Your draft is saved in this browser as you go.</li></ul>`)}
-    ${section('Sharing your isle', `<ul><li><b>Share online</b> (sign in with GitHub or Google): get a link anyone can play. The server checks it again before it goes live.</li>
+    ${section('Sharing your isle', `<ul>${STATIC_DEPLOYMENT ? '' : '<li><b>Share online</b>: sign in to get a link anyone can play. The server checks your isle before it goes live.</li>'}
       <li><b>Propose on GitHub</b>: add your GitHub username for credit. If it passes every check, the builder opens GitHub with your isle already filled in at <code>isles/community/&lt;you&gt;/&lt;id&gt;.json</code>. Sign in there and GitHub opens the pull request for you. Merged isles ship in the game. (A very large map downloads as a file to add by hand instead.)</li>
       <li>Community isles need a solution of at least 6 moves that uses a real mechanic (plain flat walking is rejected), and must not copy an existing isle.</li>
       <li><b>Isle code</b> is the same text format as the file. Edit it directly, or paste one in. <b>JSON</b> / <b>Import</b> save and load files.</li></ul>`)}

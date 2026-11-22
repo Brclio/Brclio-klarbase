@@ -51,7 +51,7 @@ test('per-account profile and revocable hashed session after valid OAuth', async
   const auth = createAuth(env, store);
   const flow = await start(auth);
   const provider = t.mock.method(globalThis, 'fetch', async (url, options) => {
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     if(url === 'https://github.com/login/oauth/access_token') {
       const body = options.body;
       assert.equal(body.get('code'), 'test-code');

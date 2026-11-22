@@ -154,14 +154,14 @@ export function createAuth(env, store) {
           code, code_verifier:flow.verifier, grant_type:'authorization_code', redirect_uri:callback(name),
           client_id:env[`AUTH_${name.toUpperCase()}_CLIENT_ID`], client_secret:env[`AUTH_${name.toUpperCase()}_CLIENT_SECRET`],
         }),
-        redirect:'error',
+        redirect:'manual',
       });
       if(!exchange.ok) return fail();
       const data = await exchange.json();
       if(typeof data?.access_token !== 'string' || !data.access_token || data.access_token.length > 4096) return fail();
       const user = await fetch(provider.profile, {
         headers:{ Accept:'application/json', Authorization:'Bearer ' + data.access_token, 'User-Agent':'Brclio-Klarbase' },
-        redirect:'error',
+        redirect:'manual',
       });
       if(!user.ok) return fail();
       profile = await user.json();

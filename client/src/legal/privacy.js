@@ -1,14 +1,28 @@
 // Privacy policy (GDPR Art. 13). Keep in sync with ENGINEERING.md §8 "What is stored, per person"
 // and with what the code really stores. Not legal advice.
 import { EVENTS, analyticsState, setAnalyticsEnabled } from '../analytics.js';
-import { UPDATED, REPO, esc, operatorBlock, contactLine, updatedLine, authoritative, otherPages } from './shared.js';
+import { STATIC_DEPLOYMENT } from '../deployment.js';
+import { UPDATED, REPO, esc, operatorBlock, operatorConfigured, contactLine, updatedLine, authoritative, otherPages } from './shared.js';
 
 export const title = 'Privacy';
 export const updated = UPDATED;
 
 const eventsHtml = () => `<ul>${EVENTS.map(e => `<li><code>${esc(e.name)}</code>${e.props.length ? ` <small>(${e.props.map(esc).join(', ')})</small>` : ''} — ${esc(e.description)}</li>`).join('')}</ul>`;
 
-export const html = () => `
+export const html = () => STATIC_DEPLOYMENT ? `
+${updatedLine('2026-11-22')}
+<h3>In your browser</h3>
+<p>Klarbase saves your progress, settings, builder draft, Daily results, map exploration and the GitHub username you enter for contributions in your browser. To erase those records, clear this site's data in your browser. The game uses no account or analytics cookies in this edition.</p>
+
+<h3>Site delivery</h3>
+<p>Cloudflare hosts the game and processes connection data such as your IP address to serve and protect the site. This edition sends no game events, progress or drafts to a game server.</p>
+
+<h3>GitHub</h3>
+<p>If you open a contribution or feedback link, GitHub handles that visit. Your contributions and feedback may be public there. Share only the information you want to make public.</p>
+
+<h3>Contact</h3>
+<p>${operatorConfigured() ? `You can reach the site operator at ${contactLine()}.` : `For general questions about this edition, use the <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">GitHub issue tracker</a>.`}</p>
+${otherPages}` : `
 ${updatedLine(UPDATED)}
 <p>Klarbase is a small open-source game made by one person. It collects as little as it can, sells nothing and shows no ads. This page explains what is stored, why, who handles it and what rights you have. It is written in plain language; the headings follow what the GDPR (Art. 13) asks us to tell you.</p>
 

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 // chapters, community isles, hand-made dailies), so every playable page is listed
 // without hand edits. Past dailies only: live never opens today's or a future date
 // by its own URL. No <lastmod> — a build date on every URL would be a guess.
-const SITE = 'https://klarbase.dev';
+const SITE = 'https://klarbase.brclio.com';
 const ISLES = fileURLToPath(new URL('../isles/', import.meta.url));
 const json = f => JSON.parse(fs.readFileSync(f, 'utf8'));
 const dirs = d => fs.readdirSync(d, { withFileTypes:true }).filter(e => e.isDirectory()).map(e => e.name);

@@ -21,7 +21,7 @@ const list = rows => `<ul>${rows.map(([n, v, l, u]) => `<li><a href="${esc(u)}" 
 export const html = () => `
 ${updatedLine(UPDATED)}
 <h3>Klarbase</h3>
-<p>The game, its engine, the tools and the isles in the repository are released under the <a href="${esc(REPO)}/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. Isles contributed by players are released under the same licence and credit their makers. Source: <a href="${esc(REPO)}" target="_blank" rel="noopener">github.com/TanmoyP/klarbase</a>.</p>
+<p>The game, its engine, the tools and the isles in the repository are released under the <a href="${esc(REPO)}/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. Isles contributed by players are released under the same licence and credit their makers. Original project by <a href="https://github.com/TanmoyP/klarbase" target="_blank" rel="noopener">TanmoyP and Klarbase contributors</a>.</p>
 
 <h3>Libraries sent to your browser</h3>
 ${list(BROWSER)}

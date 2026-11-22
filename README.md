@@ -45,9 +45,9 @@ bridges, step through arches — one hop per key, to the glowing star.
 - **Build your own** in the in-game builder, share it online, or **contribute it here by pull
   request** — automated checks make sure it's solvable and fair, and you're credited by name.
 
-The Brclio edition at **[klarbase.brclio.com](https://klarbase.brclio.com)** serves the game and
-builder through Cloudflare Pages. Progress stays in your browser. The feature list above also
-includes online features from the original [Klarbase](https://klarbase.dev).
+The Brclio edition at **[klarbase.brclio.com](https://klarbase.brclio.com)** runs on Cloudflare Free.
+Play and build as a guest, or sign in with GitHub to sync progress, share isles and post comments.
+The original [Klarbase](https://klarbase.dev) is by TanmoyP and its contributors.
 See the Brclio [privacy policy](https://klarbase.brclio.com/privacy) and [deployment runbook](DEPLOYMENT.md).
 
 ## Make an isle

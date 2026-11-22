@@ -742,8 +742,11 @@ anonymously per isle in `IslePlay` (above).
 **Brclio edition.** Cloudflare Pages project `brclio-klarbase` serves [klarbase.brclio.com](https://klarbase.brclio.com).
 The GitHub integration deploys pushes to `Brclio/Brclio-klarbase`'s `main` branch, including PR merges.
 Preview builds are disabled. Pages builds from the monorepo root with Node 22 and publishes `client/dist`.
-`VITE_STATIC_DEPLOYMENT=true` enables local play and building with browser-stored progress and hides features that need the Express API.
-Pages serves game deep links through its SPA fallback and returns JSON 404 under `/api/*`.
+`VITE_GITHUB_DEPLOYMENT=true` enables GitHub OAuth and online features through Pages Functions.
+A repository-scoped GitHub App writes encrypted profile, session, progress, puzzle, and comment records to the private Brclio data repository.
+The backend merges saves with `@klar/core` under a Git ref compare-and-swap retry. The browser separates guest progress from each account.
+The internal `brclio-klarbase-verifier` Worker uses a SQLite-backed Durable Object to run the 200k-state solver and difficulty audit with no persistent data.
+Workers Builds deploys the verifier from the same production branch. Both services run on Cloudflare Free.
 See [`DEPLOYMENT.md`](DEPLOYMENT.md#brclio-production) for project settings and rollback.
 
 **Upstream.** A single Railway service (Docker) serving API + built client, Neon Postgres
@@ -821,6 +824,7 @@ cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 ### 2026-11-22 — Brclio Cloudflare Pages deployment
 - Publish the static game and builder at `klarbase.brclio.com` with production builds from GitHub `main`.
 - Use the Brclio origin in discovery assets and keep API paths out of the SPA fallback.
+- Add GitHub login, account-isolated cloud saves, comments and online isle sharing on Cloudflare Free. Store data as encrypted records in the private Brclio GitHub data repository and verify publishes in an internal Durable Object.
 
 ### 2026-11-19 (ah) — Integration: review fixes, local-DB route checks, PRs
 - **How this release was built:** an Opus plan, then six Sonnet agents in parallel worktrees (A repo · B comments ·

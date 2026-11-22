@@ -493,6 +493,11 @@ copier; malformed JSON ✗; wrong par ✗; non-JSON file ✗; maintainer fix ✓
 
 ## 7. Client
 
+### Interface languages
+
+The browser interface defaults to Simplified Chinese. The language button in the top bar switches between Chinese and English. The choice is stored in `klarbase.v2.language` on the current origin and applies to deep links and later visits. The UI updates the active view in place. Isle IDs, board data, solution keys, player text and cloud-save formats are independent of the display language.
+
+
 - **Look (art direction, inspired by Koldo Huici's floating mini-world):** isometric-ish
   perspective (fov 30, 40° elevation, 28° yaw offset so ↑ ≈ north); terrain columns with
   banded strata on cut faces, hanging root keel, emissive crystals in the rim; waterfalls where
@@ -820,6 +825,11 @@ cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 ## 13. Session Log
 
 > Newest first. Sessions (a)–(k) of 2026-08-19 are in `docs/archive/v1/ENGINEERING-v1.md`.
+
+### 2026-11-22 — Simplified Chinese and English interface
+
+- Localize the game, builder, Sky Atlas, account screens and legal pages. Keep the original English available from the top bar.
+- Keep each browser's language choice across visits. A language change updates the current view without restarting a game or discarding a draft.
 
 ### 2026-11-22 — Restore Brclio production API and guard automatic releases
 

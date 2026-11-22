@@ -4,6 +4,7 @@
 // solution), bodies are blurred behind one button — threads may hint at routes.
 import { api } from './net.js';
 import { track } from './analytics.js';
+import { getLanguage, t } from './i18n.js';
 
 const MAX = 500;
 const counts = new Map();                 // statKey -> total comments (cached; kept in step by post/delete)
@@ -40,12 +41,36 @@ let styled = false;
 const el = (tag, cls, text) => { const n = document.createElement(tag); if(cls) n.className = cls; if(text != null) n.textContent = text; return n; };
 const btn = (label, cls = 'btn') => { const b = el('button', cls, label); b.type = 'button'; return b; };
 
-const RTF = typeof Intl !== 'undefined' && Intl.RelativeTimeFormat ? new Intl.RelativeTimeFormat(undefined, { numeric:'auto' }) : null;
+const relativeTimes = new Map();
 function ago(iso){
   const s = (new Date(iso).getTime() - Date.now()) / 1000;
+  const lang = getLanguage();
+  if(!relativeTimes.has(lang)) relativeTimes.set(lang, typeof Intl !== 'undefined' && typeof Intl.RelativeTimeFormat === 'function' ? new Intl.RelativeTimeFormat(lang, { numeric:'auto' }) : null);
+  const formatter = relativeTimes.get(lang);
   for(const [unit, sec] of [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]])
-    if(Math.abs(s) >= sec) return RTF ? RTF.format(Math.round(s / sec), unit) : Math.round(-s / sec) + ' ' + unit + 's ago';
-  return 'just now';
+    if(Math.abs(s) >= sec) return formatter ? formatter.format(Math.round(s / sec), unit) : new Date(iso).toLocaleDateString(lang);
+  return t('just now', '刚刚');
+}
+
+const commentErrors = {
+  'write a comment first':'请先写下评论。',
+  'keep it under 500 characters':'评论最多可写 500 个字符。',
+  'plain text only':'请使用纯文本。',
+  'no links, please — plain text only':'请使用纯文本，不要附上链接。',
+  'Describe the idea, not the keys — routes are earned in Klarbase.':'可以分享解题思路，请把具体按键路线留给其他玩家发现。',
+  'that one is yours — delete it instead':'这是你自己的评论，可以直接删除。',
+  'login required':'请先登录。',
+  'report limit reached':'举报过于频繁，请稍后再试。',
+  'comment limit reached — 20 per hour':'每小时最多发表 20 条评论，请稍后再试。',
+  'unknown isle key':'找不到这座浮岛。',
+  'unknown isle':'找不到这座浮岛。',
+  'invalid comment cursor':'评论列表已变化，请重新打开。',
+  'not found':'找不到这条评论。',
+  'Game storage temporarily unavailable':'存储服务暂时不可用，请稍后再试。',
+  'Failed to fetch':'无法连接服务器，请检查网络。',
+};
+function commentError(error){
+  return t(error.message, commentErrors[error.message] || (error.status ? `请求失败（HTTP ${error.status}），请稍后再试。` : '无法完成请求，请检查网络后重试。'));
 }
 
 function avatar(a){
@@ -71,42 +96,42 @@ export function openComments(entry, opts = {}){
   opts.modal.open('');
   const root = el('div', 'cm');
   document.getElementById('modalBody').replaceChildren(root);
-  root.append(el('h2', null, '💬 Comments'), el('div', 'sub', entry.name || ''));
+  root.append(el('h2', null, t('💬 Comments', '💬 评论')), el('div', 'sub', entry.name || ''));
 
   const gate = el('div', 'spoiler');
   const list = el('div', 'list' + (revealed ? '' : ' spoil'));
-  const status = el('div', 'empty', 'Loading…');
-  const more = btn('Load more', 'btn small'); more.style.display = 'none';
+  const status = el('div', 'empty', t('Loading…', '正在加载…'));
+  const more = btn(t('Load more', '加载更多'), 'btn small'); more.style.display = 'none';
   let loaded = false;
   const sync = () => {
     const n = list.children.length;
     status.style.display = n ? 'none' : '';
-    if(loaded && !n) status.textContent = 'No comments yet — say something kind, or share an idea (never the route).';
+    if(loaded && !n) status.textContent = t('No comments yet — say something kind, or share an idea (never the route).', '还没有评论。聊聊你喜欢的地方，或留下不剧透的提示吧。');
     list.classList.toggle('spoil', !revealed);
     gate.style.display = !revealed && n ? '' : 'none';
   };
-  gate.append(el('div', null, 'Comments may hint at the solution, so they stay blurred until you’ve cleared this isle, signed in or tried hard.'));
-  const show = btn('Show comments anyway', 'btn small'); show.style.marginTop = '6px';
+  gate.append(el('div', null, t('Comments may hint at the solution, so they stay blurred until you’ve cleared this isle, signed in or tried hard.', '评论里可能有解题提示。通关这座浮岛、登录或充分尝试后，就能直接看到评论。')));
+  const show = btn(t('Show comments anyway', '仍然查看评论'), 'btn small'); show.style.marginTop = '6px';
   show.onclick = () => { revealed = true; sync(); };
   gate.append(show); gate.style.display = 'none';
 
   function item(c){
     const row = el('div', 'item' + (c.mine ? ' own' : '')), main = el('div', 'main'), meta = el('div', 'meta');
-    meta.append(el('b', null, c.author.name || 'Someone'), document.createTextNode(ago(c.createdAt)));
+    meta.append(el('b', null, c.author.name || t('Someone', '一位玩家')), document.createTextNode(ago(c.createdAt)));
     const acts = el('div', 'acts');
     if(c.mine){
-      const del = btn('Delete', ''); del.onclick = async () => {
-        if(!confirm('Delete this comment?')) return;
+      const del = btn(t('Delete', '删除'), ''); del.onclick = async () => {
+        if(!confirm(t('Delete this comment?', '确定删除这条评论吗？'))) return;
         del.disabled = true;
         try { await api('/comments/' + encodeURIComponent(c.id), { method:'DELETE' }); row.remove(); setCount(total - 1); sync(); }
-        catch(e){ del.disabled = false; flash(e.message); }
+        catch(e){ del.disabled = false; flash(commentError(e)); }
       };
       acts.append(del);
     } else if(signedIn){
-      const rep = btn('Report', ''); rep.onclick = async () => {
+      const rep = btn(t('Report', '举报'), ''); rep.onclick = async () => {
         rep.disabled = true;
-        try { await api('/comments/' + encodeURIComponent(c.id) + '/report', { method:'POST', body:{} }); rep.textContent = 'Reported'; }
-        catch(e){ rep.disabled = false; flash(e.message); }
+        try { await api('/comments/' + encodeURIComponent(c.id) + '/report', { method:'POST', body:{} }); rep.textContent = t('Reported', '已举报'); }
+        catch(e){ rep.disabled = false; flash(commentError(e)); }
       };
       acts.append(rep);
     }
@@ -127,7 +152,7 @@ export function openComments(entry, opts = {}){
       for(const c of r.comments) list.append(item(c));
       next = r.next; setCount(r.count); loaded = true; status.textContent = '';
       more.style.display = next ? '' : 'none';
-    } catch(e){ status.textContent = ''; flash('Couldn’t load comments — ' + e.message); }
+    } catch(e){ status.textContent = ''; flash(t('Couldn’t load comments — ', '无法加载评论。') + commentError(e)); }
     more.disabled = false; sync();
   }
   more.onclick = load;
@@ -135,10 +160,10 @@ export function openComments(entry, opts = {}){
 
   if(signedIn){
     const ta = document.createElement('textarea');
-    ta.maxLength = MAX; ta.placeholder = 'Share an idea — not the route…'; ta.setAttribute('aria-label', 'Write a comment');
+    ta.maxLength = MAX; ta.placeholder = t('Share an idea — not the route…', '分享思路，把路线留给其他玩家发现…'); ta.setAttribute('aria-label', t('Write a comment', '写评论'));
     const cnt = el('div', 'cnt', `0 / ${MAX}`);
     ta.oninput = () => { cnt.textContent = `${ta.value.length} / ${MAX}`; };
-    const post = btn('Post', 'btn primary');
+    const post = btn(t('Post', '发表'), 'btn primary');
     post.onclick = async () => {
       if(!ta.value.trim()) return;
       post.disabled = true; err.style.display = 'none';
@@ -148,18 +173,18 @@ export function openComments(entry, opts = {}){
         ta.value = ''; cnt.textContent = `0 / ${MAX}`;
         track('comment_post');   // hook(analytics)
         sync();
-      } catch(e){ flash(e.message); }
+      } catch(e){ flash(commentError(e)); }
       post.disabled = false;
     };
     const row = el('div', 'row'); row.append(post);
-    root.append(ta, cnt, el('div', 'note', 'Plain text. No links, and no routes — they’re earned in Klarbase.'), row);
+    root.append(ta, cnt, el('div', 'note', t('Plain text. No links, and no routes — they’re earned in Klarbase.', '请使用纯文本，不要发布链接或完整路线，让其他玩家也能享受解谜的乐趣。')), row);
   } else {
-    const si = btn('Sign in to comment', 'btn primary');
+    const si = btn(t('Sign in to comment', '登录后发表评论'), 'btn primary');
     si.onclick = () => { if(opts.onSignIn) opts.onSignIn(); };
     const row = el('div', 'row'); row.append(si);
     root.append(row);
   }
-  const close = btn('Close', 'btn ghost'); close.onclick = () => opts.modal.close();
+  const close = btn(t('Close', '关闭'), 'btn ghost'); close.onclick = () => opts.modal.close();
   const crow = el('div', 'row'); crow.append(close); root.append(crow);
   load();
 }

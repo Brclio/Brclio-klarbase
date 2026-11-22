@@ -3,15 +3,17 @@
 // dot), region names. Drag / wheel / pinch to pan and zoom; tap a lit star to fast-travel there.
 // Cheap: one 16x16 canvas per explored chunk (built once), a redraw only when opened, panned or zoomed.
 import { chunkCached, regionAt, ATLAS_SEED, CHUNK } from '@klar/core';
+import { t } from '../i18n.js';
+import { regionName } from '../i18n/atlas.js';
 import { THEMES } from '../game/themes.js';
 
 const PAPER = ['#f4e9d0', '#e8d9b8'];
 const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(v * k))); return [f(n >> 16), f(n >> 8 & 255), f(n & 255)]; };
 
 export function createAtlas({ root, getPos, getExplored, shrineInfo, onTravel, onClose, track }){
-  root.innerHTML = `<div class="atlas-bar glass"><b>Sky Atlas</b><span id="atlasNote">tap a lit ★ to fly there</span><button class="btn small" id="atlasX" title="Close (Esc / M)">✕</button></div>
+  root.innerHTML = `<div class="atlas-bar glass"><b></b><span id="atlasNote"></span><button class="btn small" id="atlasX">✕</button></div>
     <canvas id="atlasCv"></canvas>
-    <div class="atlas-legend glass"><span><i class="you"></i>you</span><span><i class="star">★</i>lit beacon</span><span><i class="dot"></i>shrine</span></div>`;
+    <div class="atlas-legend glass"><span><i class="you"></i><span data-legend="you"></span></span><span><i class="star">★</i><span data-legend="star"></span></span><span><i class="dot"></i><span data-legend="dot"></span></span></div>`;
   const cv = root.querySelector('#atlasCv'), g = cv.getContext('2d'), note = root.querySelector('#atlasNote');
   root.querySelector('#atlasX').onclick = () => close();
   let opened = false, scale = 6, cx = 0, cz = 0, W = 0, H = 0, dpr = 1, pins = [];
@@ -59,7 +61,7 @@ export function createAtlas({ root, getPos, getExplored, shrineInfo, onTravel, o
     for(const a of regions.values()){
       const fs = Math.max(11, Math.min(22, scale * 2.6));
       g.font = `700 ${fs}px Fredoka, Nunito, sans-serif`; g.lineWidth = 4; g.strokeStyle = 'rgba(244,233,208,.85)'; g.fillStyle = 'rgba(96,66,38,.85)';
-      const tx = sx(a.x / a.n), tz = sz(a.z / a.n); g.strokeText(a.name, tx, tz); g.fillText(a.name, tx, tz);
+      const tx = sx(a.x / a.n), tz = sz(a.z / a.n); g.strokeText(regionName(a.name), tx, tz); g.fillText(regionName(a.name), tx, tz);
     }
     for(const pin of pins){
       if(pin.px < -12 || pin.pz < -12 || pin.px > W + 12 || pin.pz > H + 12) continue;
@@ -107,12 +109,25 @@ export function createAtlas({ root, getPos, getExplored, shrineInfo, onTravel, o
   cv.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.offsetX, e.offsetY, Math.exp(-e.deltaY * 0.0015)); }, { passive:false });
   new ResizeObserver(() => { if(opened){ size(); draw(); } }).observe(root);
 
+  function updateNote(){
+    note.textContent = pins.some(p => p.lit) ? t('tap a lit ★ to fly there', '点击点亮的 ★ 即可飞往该处')
+      : t('clear a shrine to light its beacon', '通关神龛中的浮岛，即可点亮信标');
+  }
+  function refreshLanguage(){
+    root.querySelector('.atlas-bar b').textContent = t('Sky Atlas', '天空星图');
+    root.querySelector('#atlasX').title = t('Close (Esc / M)', '关闭（Esc / M）');
+    root.querySelector('[data-legend=you]').textContent = t('you', '你的位置');
+    root.querySelector('[data-legend=star]').textContent = t('lit beacon', '已点亮的信标');
+    root.querySelector('[data-legend=dot]').textContent = t('shrine', '神龛');
+    updateNote(); redraw();
+  }
+  refreshLanguage();
   function open(){
     if(opened) return; opened = true; root.classList.add('on');
     const p = getPos(); cx = p.x; cz = p.z; scale = Math.max(3, Math.min(10, scale));
     size(); draw(); if(track) track();
-    note.textContent = pins.some(p => p.lit) ? 'tap a lit ★ to fly there' : 'clear a shrine to light its beacon';
+    updateNote();
   }
   function close(){ if(!opened) return; opened = false; root.classList.remove('on'); if(onClose) onClose(); }
-  return { open, close, toggle:() => opened ? close() : open(), get isOpen(){ return opened; }, get pins(){ return pins; }, redraw };
+  return { open, close, refreshLanguage, toggle:() => opened ? close() : open(), get isOpen(){ return opened; }, get pins(){ return pins; }, redraw };
 }

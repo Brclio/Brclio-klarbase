@@ -6,12 +6,13 @@
 // and is remembered in localStorage `klarbase.v2.quality`. Without an explicit choice, a
 // rolling average frame time above 22 ms for 3 s drops one tier, once, silently.
 // Dev: ?quality=fancy|cozy|fast in the URL forces a tier for that visit (no auto-drop, not saved).
+import { gameText } from '../i18n/game.js';
 import { createPost } from './post.js';
 import { KLAR } from './lightpatch.js';
 import { reapply } from './look.js';
 
 export const TIERS = ['fancy', 'cozy', 'fast'];
-export const LABEL = { fancy:'Fancy', cozy:'Cozy', fast:'Fast' };
+export const LABEL = { get fancy(){ return gameText('Fancy'); }, get cozy(){ return gameText('Cozy'); }, get fast(){ return gameText('Fast'); } };
 export const ICON = { fancy:'✨', cozy:'🌿', fast:'⚡' };
 const KEY = 'klarbase.v2.quality';
 // dpr = pixel-ratio cap, shadow = map size, taps = [blocker search, PCF] for the soft sun shadow

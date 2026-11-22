@@ -7,7 +7,7 @@
 > cozy, turn-based **Isles**. The v1 document (voxel engine, illusion maths, the first deploy
 > day, sessions a–k) is preserved in [`docs/archive/v1/ENGINEERING-v1.md`](docs/archive/v1/ENGINEERING-v1.md).
 >
-> **Last updated:** 2026-11-19 · **Owner:** CTO · **Repo:** `TanmoyP/klarbase` (public, MIT)
+> **Last updated:** 2026-11-22 · **Brclio repo:** `Brclio/Brclio-klarbase` (public, MIT) · **Upstream:** `TanmoyP/klarbase`
 
 ## 0. How to use this document
 - It is **living**. Every session that changes rules, data, infra or the roadmap updates the
@@ -739,7 +739,14 @@ anonymously per isle in `IslePlay` (above).
 
 ## 9. Infrastructure & deployment
 
-Unchanged from v1 — single Railway service (Docker) serving API + built client, Neon Postgres
+**Brclio edition.** Cloudflare Pages project `brclio-klarbase` serves [klarbase.brclio.com](https://klarbase.brclio.com).
+The GitHub integration deploys pushes to `Brclio/Brclio-klarbase`'s `main` branch, including PR merges.
+Preview builds are disabled. Pages builds from the monorepo root with Node 22 and publishes `client/dist`.
+`VITE_STATIC_DEPLOYMENT=true` enables local play and building with browser-stored progress and hides features that need the Express API.
+Pages serves game deep links through its SPA fallback and returns JSON 404 under `/api/*`.
+See [`DEPLOYMENT.md`](DEPLOYMENT.md#brclio-production) for project settings and rollback.
+
+**Upstream.** A single Railway service (Docker) serving API + built client, Neon Postgres
 (pooled runtime / direct migrations), Cloudflare in front, **no cron**. The Dockerfile now also
 copies `isles/` so community isles are bundled. Full detail: `docs/archive/v1/ENGINEERING-v1.md` §7
 and [`DEPLOYMENT.md`](DEPLOYMENT.md). Scaling gotcha still open: the in-memory rate limiter
@@ -797,7 +804,7 @@ cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 
 - **better-auth is exact-pinned to `1.4.22`** to match the Prisma schema (1.7 expects `Account.issuer`).
 - `railway up --ci` often drops its log stream with a timeout — **not** a failed build; verify via the served bundle hash and `/api/health`.
-- **Railway auto-deploys every merge to `main`** (seen 2026-10-19: deploys at each PR merge). `railway up` uploads the *working directory*, so only run it from a clean `main` checkout — never from a feature branch.
+- **Upstream Railway auto-deploys every merge to `main`** (seen 2026-10-19: deploys at each PR merge). `railway up` uploads the *working directory*, so only run it from a clean `main` checkout — never from a feature branch.
 - **Browser pane hidden ⇒ `requestAnimationFrame` stops**, so Pip's tweens never finish and keys queue up. Show the pane (`show_pane preview`) before driving solutions in the browser.
 - Neon `DIRECT_URL` = pooled URL minus `-pooler`. OAuth callbacks must match `BETTER_AUTH_URL` exactly.
 - **New rules or tiles:** change `core/src/isle/*`, run `node core/test/isles.mjs` — it re-solves every official isle and reports any par that moved; then `node tools/author.mjs` and commit any regenerated `core/src/isle/official.js`.
@@ -810,6 +817,10 @@ cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 ## 13. Session Log
 
 > Newest first. Sessions (a)–(k) of 2026-08-19 are in `docs/archive/v1/ENGINEERING-v1.md`.
+
+### 2026-11-22 — Brclio Cloudflare Pages deployment
+- Publish the static game and builder at `klarbase.brclio.com` with production builds from GitHub `main`.
+- Use the Brclio origin in discovery assets and keep API paths out of the SPA fallback.
 
 ### 2026-11-19 (ah) — Integration: review fixes, local-DB route checks, PRs
 - **How this release was built:** an Opus plan, then six Sonnet agents in parallel worktrees (A repo · B comments ·

@@ -9,6 +9,7 @@ import { CURATED_ISLES, CHAPTERS, SCHEMAS, parseIsle, solveIsle, solveSeeds, sta
 // self-hosted fonts (OFL-1.1, bundled by Vite): visitors' browsers never contact Google Fonts
 import '@fontsource/fredoka/500.css'; import '@fontsource/fredoka/600.css'; import '@fontsource/fredoka/700.css';
 import '@fontsource/nunito/500.css'; import '@fontsource/nunito/600.css'; import '@fontsource/nunito/700.css'; import '@fontsource/nunito/800.css';
+import { REPO_URL, STATIC_DEPLOYMENT } from './deployment.js';
 import { siteFoot } from './sitefoot.js'; // hook(repo)
 import { World } from './game/world.js';
 import { LOOK } from './game/look.js';                       // hook(look)
@@ -26,7 +27,6 @@ import { api } from './net.js';
 import { initAnalytics, track, identify, reset as resetAnalytics } from './analytics.js';   // hook(analytics)
 import { showLegal, LEGAL_PAGES } from './legal/index.js';   // hook(legal)
 
-export const REPO_URL = 'https://github.com/TanmoyP/klarbase';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const store = {
@@ -66,7 +66,7 @@ const communityHashes = () => COMMUNITY.map(d => [isleHash(d), `community isle �
 // is difficultyScore() in @klar/core; this file only gathers its inputs.
 let plays = {}, playsAt = 0, playsLoaded = false;
 async function loadPlays(){
-  if(Date.now() - playsAt < 60000) return;
+  if(STATIC_DEPLOYMENT || Date.now() - playsAt < 60000) return;
   playsAt = Date.now();
   try { plays = (await api('/plays')).plays || {}; playsLoaded = true; } catch { return; }
   document.querySelectorAll('[data-stats]').forEach(el => { const e = entryByKey(el.dataset.stats); if(e) el.textContent = statsLine(e); });
@@ -86,7 +86,8 @@ function scoreOf(e){
 function tierBadge(e){
   const d = scoreOf(e);
   // Every new isle is under 20 plays, so an on-card "settling" read as noise on every card — the tooltip says it.
-  const why = d.settling ? `early estimate — ${d.n} of 20 plays so far; starts from ${d.declared ? 'the maker’s gut call' : 'the solver’s estimate'}` : `from ${d.n} plays`;
+  const prior = d.declared ? 'the maker’s rating' : 'the solver’s estimate';
+  const why = STATIC_DEPLOYMENT ? `from ${prior}` : d.settling ? `early estimate — ${d.n} of 20 plays so far; starts from ${prior}` : `from ${d.n} plays`;
   return `<span class="tier t-${d.tier.id}" data-score="${esc(e.key)}" title="Difficulty ${d.score}/100 · ${why}">${d.tier.name} ${d.score}</span>`;
 }
 // Card line: "▶ 128 plays · 64% clear · 9% at par" — counts only, from the same anonymous sums.
@@ -106,7 +107,7 @@ function crowdLine(e, moves){
 const entryByKey = k => [...official, ...community, ...DATED, ...(online || [])].find(e => e.key === k) || (current && current.key === k ? current : null);
 // Fire-and-forget; counts only — no id, no cookie (credentials omitted).
 function postPlay(event, extra = {}){
-  if(!current || current.draft || !current.statKey) return;
+  if(STATIC_DEPLOYMENT || !current || current.draft || !current.statKey) return;
   trackPlay(event, extra);   // hook(analytics)
   fetch('/api/plays', { method:'POST', headers:{ 'content-type':'application/json' }, credentials:'omit', keepalive:true,
     body:JSON.stringify({ key:current.statKey, event, ...extra }) }).catch(() => {});
@@ -259,16 +260,23 @@ async function refreshAuth(){
   syncOnSignIn(session);   // hook(cloudsave): merge this device's progress with the account's
 }
 $('#titleFoot')?.insertAdjacentHTML('beforeend', siteFoot()); // hook(repo)
+if(STATIC_DEPLOYMENT){
+  $('#btnGithub').href = REPO_URL;
+  $('#scr-title .fine').firstChild.textContent = 'Progress is saved in this browser.';
+  $('#scr-title .fine-links').remove();
+}
 // hook(cloudsave): the cloud merge refreshes whatever shows stars
 initCloudSave({ progress, dailies, toast, refresh:() => {
   if(document.getElementById('scr-select').classList.contains('on')) selectScreen(tab);
   else if(document.getElementById('scr-title').classList.contains('on')) renderSkyStrip();
 } });
 document.addEventListener('click', e => {
-  if(e.target.id === 'siGh') startSignIn('github'); if(e.target.id === 'siGo') startSignIn('google');
+  if(!STATIC_DEPLOYMENT){
+    if(e.target.id === 'siGh') startSignIn('github'); if(e.target.id === 'siGo') startSignIn('google');
+    if(e.target.closest('.feedback-open')){ sfx.ui(); feedbackModal(); }
+  }
   const go = e.target.closest('[data-go]'); if(go){ e.preventDefault(); sfx.ui(); nav(go.dataset.go); }
   const hp = e.target.closest('[data-help]'); if(hp){ sfx.ui(); helpModal(hp.dataset.help); }
-  if(e.target.closest('.feedback-open')){ sfx.ui(); feedbackModal(); }
 });
 
 // ? opens How to build in the builder, How to play everywhere else; the tabs switch in place.
@@ -300,11 +308,11 @@ function helpModal(which = 'play'){
       <div><span class="ico">🪨</span><span>Boulders roll their lane and thorn sweepers turn, one beat per move. Glowing rings show where they’ll be next. Get caught and Pip bonks — the move doesn’t count. <b>Space</b> waits a beat.</span></div>
       <div><span class="ico">🗺</span><span>Some maps have several isles. A gateway arch carries you between them; press <b>M</b> to see the whole map.</span></div>
       <div><span class="ico">⭐</span><span>Reach the glowing star. Match par for ★★★. Stuck? <b>H</b> shows the isle’s tip, then your best next move.</span></div>
-      <div><span class="ico">📈</span><span>Each isle shows a difficulty from <b>Breeze</b> to <b>Mythic</b>. It starts as the maker’s guess and settles as people play.</span></div>
+      <div><span class="ico">📈</span><span>Each isle shows a difficulty from <b>Breeze</b> to <b>Mythic</b>. ${STATIC_DEPLOYMENT ? 'Difficulty comes from the maker’s rating or the solver’s estimate.' : 'It starts as the maker’s guess and settles as people play.'}</span></div>
     </div>
-    <p class="facts" style="font-size:12.5px;font-weight:600;margin:10px 0 0">Privacy: to rate difficulty, the game counts plays, clears, hints, restarts, moves and time per isle — anonymous totals with no account, cookie or IP address. Signing in sets one cookie and keeps your name, email and session details. <a href="/privacy" data-go="/privacy" style="color:inherit">What's stored</a></p>
+    ${STATIC_DEPLOYMENT ? '' : `<p class="facts" style="font-size:12.5px;font-weight:600;margin:10px 0 0">Privacy: to rate difficulty, the game counts plays, clears, hints, restarts, moves and time per isle — anonymous totals with no account, cookie or IP address. Signing in sets one cookie and keeps your name, email and session details. <a href="/privacy" data-go="/privacy" style="color:inherit">What's stored</a></p>`}
     ${siteFoot()}<!-- hook(repo) -->
-    <div class="row"><button class="btn feedback-open">✉ Send feedback</button><button class="btn primary" onclick="document.getElementById('modal').classList.remove('on')">Got it</button></div>`);
+    <div class="row">${STATIC_DEPLOYMENT ? '' : '<button class="btn feedback-open">✉ Send feedback</button>'}<button class="btn primary" onclick="document.getElementById('modal').classList.remove('on')">Got it</button></div>`);
 }
 
 // Sky Atlas: how the map works (shown first while exploring)
@@ -422,8 +430,8 @@ function selectScreen(which){
         Automated checks make sure it's solvable and fair, and you're credited by name. <a href="${REPO_URL}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing guide →</a></p></div>
       ${pastDailies().length ? `<div class="chapter"><div class="chapter-head"><h3>Past Daily Isles</h3><span>hand-made for one day · still here to play</span></div>
         <div class="grid">${pastDailies().map(e => cardHtml(e, '#' + dailyNumber(e.date, DAILY_EPOCH_DATE))).join('')}</div></div>` : ''}
-      <div class="chapter"><div class="chapter-head"><h3>Shared online</h3><span>fresh isles shared from the builder</span></div><div class="grid" id="onlineGrid"><div class="empty">Loading…</div></div></div>`;
-    loadOnline();
+      ${STATIC_DEPLOYMENT ? '' : '<div class="chapter"><div class="chapter-head"><h3>Shared online</h3><span>fresh isles shared from the builder</span></div><div class="grid" id="onlineGrid"><div class="empty">Loading…</div></div></div>'}`;
+    if(!STATIC_DEPLOYMENT) loadOnline();
   }
   const first = (tab === 'official' ? official : community)[0];
   if(first && !world.showcase){ const { level } = parseIsle(first.doc); world.load(level, first.theme, { showcase:true }); world.setShowcase(true); world.reset(initialState(level)); }
@@ -467,7 +475,7 @@ function play(entry){
     onHazard:() => { if(!warned){ warned = true; toast('Bonk! Something comes through there on the next beat — the glowing rings show where. Space waits a beat.'); } } });
   freeHints = 1; attemptOpen = false;
   $('#hudName').textContent = entry.name;
-  $('#btnComments').style.display = entry.statKey && !entry.draft ? '' : 'none';   // hook(comments): drafts/replays have no thread
+  $('#btnComments').style.display = !STATIC_DEPLOYMENT && entry.statKey && !entry.draft ? '' : 'none';   // hook(comments): drafts/replays have no thread
   $('#hudSub').innerHTML = tierBadge(entry) + ' ' + (entry.author && !entry.daily ? `by <a href="https://github.com/${esc(entry.author)}" target="_blank" rel="noopener" style="color:inherit">@${esc(entry.author)}</a>` : esc(entry.sub || ''));   // tier first, so phones never ellipsize it away
   $('#statPar').textContent = entry.par || '–';
   $('#statKeysWrap').style.display = level.keys.length ? '' : 'none';
@@ -540,7 +548,7 @@ function won(s){
       ${e.online ? `<button class="btn" id="wShare">🔗 Copy link</button>` : ''}
       ${!e.draft && !e.fromMap ? `<button class="btn ghost" id="wList">All isles</button>` : ''}
     </div>
-    ${e.statKey && !e.draft ? `<div class="facts" style="margin-top:10px"><a href="#" id="wComments">💬 Comments</a></div>` : ''}`);   // hook(comments)
+    ${!STATIC_DEPLOYMENT && e.statKey && !e.draft ? `<div class="facts" style="margin-top:10px"><a href="#" id="wComments">💬 Comments</a></div>` : ''}`);   // hook(comments)
   if($('#wComments')){ const wc = $('#wComments'); wc.onclick = ev => { ev.preventDefault(); commentsOpen(e); }; commentCount(e.statKey).then(n => { if(n != null && wc.isConnected) wc.textContent = `💬 Comments (${n})`; }); }   // hook(comments)
   // spoiler-free daily result: moves, par and stars — never the route
   const copyShare = quiet => (navigator.clipboard ? navigator.clipboard.writeText(`${share}\n${shareUrl}`) : Promise.reject())
@@ -611,15 +619,15 @@ function lockModal(what = 'solution'){
   const e = current, f = effort[e.key] || { t:0, m:0 }, need = effortNeed(e);
   const bar = (v, max) => `<div style="height:8px;border-radius:99px;background:rgba(42,34,56,.08);overflow:hidden;margin:4px 0 10px"><div style="height:100%;width:${Math.min(100, v / max * 100)}%;background:var(--accent)"></div></div>`;
   modal.open(`<h2>🔒 Earn the ${what}</h2>
-    <p class="facts" style="font-weight:600">Smart routes are for players who've tried. Unlock this isle's ${what} any of three ways:</p>
+    <p class="facts" style="font-weight:600">Smart routes are for players who've tried. Unlock this isle's ${what} any of ${STATIC_DEPLOYMENT ? 'two' : 'three'} ways:</p>
     <div class="rules">
-      <div><span class="ico">🔑</span><span><b>Sign in</b> — GitHub or Google. Contributors already have it.</span></div>
+      ${STATIC_DEPLOYMENT ? '' : '<div><span class="ico">🔑</span><span><b>Sign in</b> — GitHub or Google. Contributors already have it.</span></div>'}
       <div><span class="ico">⭐</span><span><b>Clear the isle</b> — then compare your route with the smart one.</span></div>
       <div><span class="ico">🐣</span><span style="flex:1"><b>Keep exploring</b> — time spent actually moving counts.
         <div style="font-size:12.5px;margin-top:6px">${fmtTime(Math.min(f.t, need.t))} / ${fmtTime(need.t)} active play</div>${bar(f.t, need.t)}
         <div style="font-size:12.5px">${Math.min(f.m, need.m)} / ${need.m} moves</div>${bar(f.m, need.m)}</span></div>
     </div>
-    <div class="row">${session ? '' : '<button class="btn primary" id="siGh">Sign in with GitHub</button><button class="btn" id="siGo">Google</button>'}
+    <div class="row">${STATIC_DEPLOYMENT || session ? '' : '<button class="btn primary" id="siGh">Sign in with GitHub</button><button class="btn" id="siGo">Google</button>'}
       <button class="btn ghost" onclick="document.getElementById('modal').classList.remove('on')">Keep playing</button></div>`);
 }
 
@@ -687,7 +695,7 @@ async function openMap(start){
 }
 // hook(comments): `unlocked(current)` is the same earned-solution test, so a thread's spoilers stay gated with it
 const commentsOpen = e => openComments(e, { modal, unlocked:unlocked(e), signedIn:!!session, onSignIn:() => openSignIn() });
-$('#btnComments').onclick = () => current && current.statKey && !current.draft && commentsOpen(current);
+if(!STATIC_DEPLOYMENT) $('#btnComments').onclick = () => current && current.statKey && !current.draft && commentsOpen(current);
 $('#btnTurn').onclick = () => { world.turn(1); sfx.ui(); };
 // Archipelago maps: the camera frames Pip's storey; M (or the button) shows the whole map.
 const syncMap = () => $('#btnMap').classList.toggle('primary', world.mapView);
@@ -778,6 +786,7 @@ async function route(){
   if((m = /^\/isle\/([\w-]+)$/.exec(h))){ const e = official.find(x => x.doc.id === m[1]); return e ? play(e) : nav('/play'); }
   if((m = /^\/c\/([\w-]+)\/([\w-]+)$/.exec(h))){ const e = community.find(x => x.author === m[1] && x.doc.id === m[2]); return e ? play(e) : nav('/community'); }
   if((m = /^\/(?:i|p)\/([0-9a-f]{64})$/.exec(h))){
+    if(STATIC_DEPLOYMENT){ toast('Online isle links are unavailable in this edition', true); return nav('/community'); }
     try {
       const r = await api('/puzzles/' + m[1]);
       if(!SCHEMAS.includes(r.puzzle.schemaVersion)){ toast('That link is from an older version of Klarbase', true); nav('/community'); return; }
@@ -788,5 +797,5 @@ async function route(){
 }
 syncTopbar();
 initAnalytics();   // hook(analytics)
-refreshAuth();
+if(!STATIC_DEPLOYMENT) refreshAuth();
 route();

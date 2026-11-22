@@ -1,6 +1,24 @@
 # Klarbase — Deployment Runbook
 
-Target production shape: **one Railway service (Docker) serving the API + built client, Neon Postgres (pooled), Cloudflare in front of `klarbase.dev`.** No CORS surface. Rationale and scaling notes live in [`ENGINEERING.md` §7](ENGINEERING.md#7-infrastructure--deployment-architecture).
+## Brclio production
+
+[`klarbase.brclio.com`](https://klarbase.brclio.com) is hosted on Cloudflare Pages in project `brclio-klarbase`. The Pages GitHub integration builds and deploys every update to `main` in `Brclio/Brclio-klarbase`. Changes reach production by merging a pull request. Pages preview builds are disabled.
+
+| Pages setting | Value |
+| --- | --- |
+| Root directory | Repository root |
+| Build command | `npm ci --no-audit --no-fund && npm run build` |
+| Build output directory | `client/dist` |
+| Production variables | `NODE_VERSION=22`, `SKIP_DEPENDENCY_INSTALL=true`, `VITE_STATIC_DEPLOYMENT=true` |
+| Custom domain | `klarbase.brclio.com` in the `brclio.com` zone |
+
+The static edition includes the official, daily and bundled community isles, Sky Atlas, and the builder. Progress stays in the browser. Accounts, cloud sync, comments, and in-game publishing require the Express API and an independent database. The Pages function returns JSON 404 for `/api/*`; the game shell handles URLs such as `/play` and `/create`.
+
+To verify a release, check that Pages shows a successful production deployment with the new `main` commit. Open the custom domain and load `/play` and `/create` directly. To roll back, select a previous production deployment in Pages.
+
+## Upstream reference
+
+The original `TanmoyP/klarbase` service at `klarbase.dev` uses Railway (Docker) for the API and built client, Neon Postgres, and Cloudflare DNS and proxy. The rest of this runbook describes that upstream deployment. See [`ENGINEERING.md` §9](ENGINEERING.md#9-infrastructure--deployment).
 
 > **Legend:** 🧑 = a step only you can do (accounts, secrets, DNS, OAuth consoles). 🤖 = a step Claude/CLI can drive for you. Steps that create accounts, enter secrets, or accept terms are always 🧑.
 

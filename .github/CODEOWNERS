@@ -1,0 +1,6 @@
+# Everything needs a maintainer's review by default — code, infra, docs, license.
+* @TanmoyP
+
+# Community isles are the exception, on purpose: an isle-only PR becomes mergeable as soon as
+# the automated `isles` check passes. (Last match wins; a pattern with no owner = unowned.)
+/isles/community/

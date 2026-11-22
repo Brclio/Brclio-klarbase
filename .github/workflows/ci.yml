@@ -1,0 +1,83 @@
+name: ci
+# Runs on every push to main and on every pull request — including pull
+# requests from forks by people we've never met. It is safe for that:
+#   * `pull_request` (not `pull_request_target`): fork PRs get a read-only token
+#     and no secrets.
+#   * Nothing is installed and no contributor code is executed — the checks are
+#     zero-dependency Node scripts that only PARSE isle JSON and judge it.
+# Mark the `engine`, `isles` and `sanity` jobs as REQUIRED status checks in the
+# branch ruleset (see CONTRIBUTING.md), so a PR that fails cannot be merged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  engine:
+    name: engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Isle engine, official isles, contribution rules
+        run: node core/test/isles.mjs
+      - name: Difficulty audit, evolving score, daily pick
+        run: node core/test/difficulty.mjs
+      - name: Progress save merge + sanitize (cloud sync)
+        run: node core/test/progress.mjs
+      - name: Legacy voxel engine (deferred world lattice)
+        run: node core/test/run.mjs
+      - name: Sky Atlas (deterministic overworld, seams, connectivity, official placement, wild isles)
+        run: node core/test/atlas.mjs
+      - name: Comment text rules (no links, no route strings) + analytics catalogue sanitiser
+        run: |
+          node server/test/comments.mjs
+          node client/test/analytics.mjs
+      - name: Official isles verified and core/src/isle/official.js current
+        run: |
+          node tools/author.mjs
+          git diff --exit-code -- core/src/isle/official.js || { echo "::error::core/src/isle/official.js is stale — run 'node tools/author.mjs' and commit the result"; exit 1; }
+
+  isles:
+    name: isles
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Check community isles (solvable, fair, unique, credited)
+        env:
+          ISLE_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ -n "$BASE_SHA" ]; then
+            ISLE_CHANGED="$(git diff --name-only "$BASE_SHA"...HEAD)"
+            export ISLE_CHANGED
+          fi
+          node tools/check-isles.mjs
+
+  sanity:
+    name: sanity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Syntax check server and client
+        run: |
+          for f in server/src/index.js server/src/auth.js server/src/routes/*.js \
+                   client/src/*.js client/src/game/*.js client/src/map/*.js client/src/legal/*.js tools/*.mjs; do
+            node --check "$f"
+          done

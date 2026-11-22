@@ -1,7 +1,7 @@
 // Privacy policy (GDPR Art. 13). Keep in sync with ENGINEERING.md §8 "What is stored, per person"
 // and with what the code really stores. Not legal advice.
 import { EVENTS, analyticsState, setAnalyticsEnabled } from '../analytics.js';
-import { STATIC_DEPLOYMENT } from '../deployment.js';
+import { GITHUB_DEPLOYMENT, STATIC_DEPLOYMENT } from '../deployment.js';
 import { UPDATED, REPO, esc, operatorBlock, operatorConfigured, contactLine, updatedLine, authoritative, otherPages } from './shared.js';
 
 export const title = 'Privacy';
@@ -9,7 +9,23 @@ export const updated = UPDATED;
 
 const eventsHtml = () => `<ul>${EVENTS.map(e => `<li><code>${esc(e.name)}</code>${e.props.length ? ` <small>(${e.props.map(esc).join(', ')})</small>` : ''} — ${esc(e.description)}</li>`).join('')}</ul>`;
 
-export const html = () => STATIC_DEPLOYMENT ? `
+export const html = () => GITHUB_DEPLOYMENT ? `
+${updatedLine('2026-11-22')}
+<h3>Playing and saving</h3>
+<p>The game keeps settings, builder drafts and guest progress in your browser. Signing in keeps your account's progress separate from guest progress. Your stars, best results, Daily results and Sky Atlas exploration sync to your account.</p>
+
+<h3>Signing in</h3>
+<p>When you sign in, Klarbase saves your display name, avatar and an account ID derived from your sign-in provider. The browser keeps a session cookie for up to seven days, and Klarbase stores its hash and expiry. Signing out revokes that session.</p>
+
+<h3>Sharing and comments</h3>
+<p>Shared isles and posted comments are public. Shared isles show your name, and comments show your name and avatar. Reports and rate-limit counters are stored with your account ID to handle abuse and duplicate reports.</p>
+
+<h3>Hosting and storage</h3>
+<p>Cloudflare processes connection data to serve and protect the site. GitHub handles GitHub sign-in and hosts the private repository where Klarbase saves encrypted account records. Git history retains encrypted earlier versions when a record changes or is removed. This edition sends no gameplay analytics.</p>
+
+<h3>Contact</h3>
+<p>${operatorConfigured() ? `You can reach the site operator at ${contactLine()}.` : `Use the <a href="${esc(REPO)}/issues" target="_blank" rel="noopener">project issue tracker</a> for general questions. Keep personal information out of public issues.`}</p>
+${otherPages}` : STATIC_DEPLOYMENT ? `
 ${updatedLine('2026-11-22')}
 <h3>In your browser</h3>
 <p>Klarbase saves your progress, settings, builder draft, Daily results, map exploration and the GitHub username you enter for contributions in your browser. To erase those records, clear this site's data in your browser. The game uses no account or analytics cookies in this edition.</p>

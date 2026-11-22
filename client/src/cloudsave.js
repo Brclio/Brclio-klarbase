@@ -1,6 +1,6 @@
 // Cloud save — signed-in players keep their progress on every device.
 // Only PROGRESS syncs (see core/src/progress.js): per-isle stars/best moves/best
-// time, dailies, and map state. GitHub sign-in uses a browser cache for each account.
+// time, dailies, and map state. Pages and Express email accounts have separate browser caches.
 // Settings, sound, timer, builder draft, effort and sign-in preferences stay on the device.
 // Local and remote are combined by the same mergeProgress the server runs, so a save
 // can only gain. Everything here is silent on failure and a no-op when signed out.
@@ -12,7 +12,7 @@ import { accountForProgress, readProgress, selectProgressAccount, writeProgress 
 
 const warn = (...a) => { if(import.meta.env?.DEV) console.warn('[cloudsave]', ...a); };
 
-let ctx = null, signedIn = false, account = null, generation = 0, timer = 0, pendingPush;
+let ctx = null, signedIn = false, account = null, sessionUserId = null, generation = 0, timer = 0, pendingPush;
 
 // main.js hands over the live progress/dailies objects (mutated in place — the game holds
 // references to them) plus a toast and a re-render callback.   hook(cloudsave)
@@ -61,22 +61,24 @@ function apply(merged){
 // After sign-in: restore the local account cache, then merge it with the cloud.
 export async function syncOnSignIn(session){
   const expectedAccount = accountForProgress(session);
+  const owner = session?.user?.id || null;
   const nextSignedIn = GITHUB_DEPLOYMENT ? !!expectedAccount : !!session;
-  if(nextSignedIn !== signedIn || expectedAccount !== account){
+  if(nextSignedIn !== signedIn || owner !== sessionUserId){
     clearTimeout(timer); timer = 0; pendingPush = undefined;
     generation++;
   }
   signedIn = nextSignedIn;
+  sessionUserId = owner;
   if(expectedAccount !== account) changeAccount(expectedAccount);
   if(!signedIn || !ctx) return;
   const current = generation;
   try {
-    const { data } = await requestProgress(expectedAccount);
+    const { data } = await requestProgress(owner);
     if(current !== generation) return;
     const merged = mergeProgress(local(), data);
     const changed = apply(merged);
-    if(!GITHUB_DEPLOYMENT || JSON.stringify(merged) !== JSON.stringify(mergeProgress(data, {}))){
-      const r = await requestProgress(expectedAccount, { method:'PUT', body:{ data:merged } });
+    if(!expectedAccount || JSON.stringify(merged) !== JSON.stringify(mergeProgress(data, {}))){
+      const r = await requestProgress(owner, { method:'PUT', body:{ data:merged } });
       if(current !== generation) return;
       if(r?.data) apply(mergeProgress(local(), r.data));
     }
@@ -96,7 +98,7 @@ export function pushSoon(){
 function push(keepalive = false){
   timer = 0;
   if(!signedIn || !ctx) return;
-  const request = pushProgress(generation, account, keepalive);
+  const request = pushProgress(generation, sessionUserId, keepalive);
   pendingPush = request;
   request.finally(() => { if(pendingPush === request) pendingPush = undefined; });
   return request;

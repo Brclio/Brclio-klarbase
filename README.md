@@ -44,7 +44,7 @@ bridges, step through arches — one hop per key, to the glowing star.
 - **Build your own** in the in-game builder, share it online, or **contribute it here by pull
   request** — automated checks make sure it's solvable and fair, and you're credited by name.
 
-This edition runs on Cloudflare Free. The game opens in Simplified Chinese and can be switched to English at any time. Play and build as a guest, or sign in with GitHub to sync progress, share isles and post comments. [Play](https://klarbase.brclio.com) · [Privacy](https://klarbase.brclio.com/privacy) · [Deployment](DEPLOYMENT.md)
+This edition runs on Cloudflare Free. The game opens in Simplified Chinese and can be switched to English at any time. Play and build as a guest, or register with an email address, password and public display name to sync progress, share isles and post comments. GitHub sign-in is also available. Return with the same sign-in method to load your save. [Play](https://klarbase.brclio.com) · [Privacy](https://klarbase.brclio.com/privacy) · [Deployment](DEPLOYMENT.md)
 
 ## Make an isle
 
@@ -81,7 +81,7 @@ For the Cloudflare build, run `npm run build:pages`. It checks the Pages API and
 | --- | --- |
 | [`core/`](core) | `@klar/core` — the rules, the solver, the official isles and the contribution rules (pure JS, zero deps) |
 | [`client/`](client) | `@klar/client` — the game and builder: Vite + three.js, all art and audio procedural |
-| [`functions/`](functions) | Cloudflare Pages API for GitHub sign-in, cloud saves, online isles and comments |
+| [`functions/`](functions) | Cloudflare Pages API for email and GitHub sign-in, cloud saves, online isles and comments |
 | [`cloudflare/`](cloudflare) | Internal Worker and Durable Object for server-side isle verification |
 | [`server/`](server) | Shared validation, server tests and the optional Express/PostgreSQL backend |
 | [`isles/`](isles) | the isles as JSON: `official/`, `community/<author>/` and `daily/`, plus the format guide |

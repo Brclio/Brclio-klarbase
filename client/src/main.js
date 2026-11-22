@@ -24,7 +24,7 @@ import { unlockAudio, setSound, soundOn, sfx } from './game/audio.js';
 import { mountBuilder, TOOLS } from './builder.js';
 import { buildGuideHtml } from './buildguide.js';
 import { getSession, loadAuthProviders, signInProviders, signOut } from './auth.js';
-import { openSignIn, signInButtons, startSignIn } from './signin.js';    // hook(cloudsave)
+import { openSignIn, openEmailSignIn, signInButtons, startSignIn } from './signin.js';    // hook(cloudsave)
 import { initCloudSave, syncOnSignIn, pushSoon, flushCloudSave } from './cloudsave.js';   // hook(cloudsave)
 import { readProgress, writeProgress } from './progress-storage.js';
 import { openComments, commentCount } from './comments.js';   // hook(comments)
@@ -242,7 +242,7 @@ function syncInset(){
   world.setInsetBottom(on ? innerHeight - sheet.getBoundingClientRect().top : 0);
 }
 new ResizeObserver(syncInset).observe(sheet);
-const modal = { open(html, wide = false){ $('#modalBody').innerHTML = html; $('#modalBody').classList.toggle('wide', wide); $('#modal').classList.add('on'); }, close(){ $('#modal').classList.remove('on'); } };
+const modal = { open(html, wide = false){ $('#modalBody').innerHTML = html; $('#modalBody').classList.toggle('wide', wide); $('#modal').classList.add('on'); }, close(){ $('#modal').classList.remove('on'); $('#accountForm')?.reset(); } };
 $('#modal').addEventListener('click', e => { if(e.target.id === 'modal') modal.close(); });
 
 /* ---------------- top bar ---------------- */
@@ -263,6 +263,9 @@ async function refreshAuth(){
     const providers = await loadAuthProviders();
     session = providers.length ? await getSession() : null;
   } catch(error){ toast(t(error.message || 'Could not check sign-in', '暂时无法检查登录状态'), true); }
+  renderAuth();
+}
+function renderAuth(){
   if(session){   // hook(analytics): opaque id only; sign_in once, after the OAuth round-trip
     identify(session.user.id);
     try { const p = sessionStorage.getItem('klarbase.signin'); if(p){ sessionStorage.removeItem('klarbase.signin'); track('sign_in', { provider:p }); } } catch {}
@@ -274,7 +277,7 @@ async function refreshAuth(){
     out.onclick = async () => {
       out.disabled = true;
       try {
-        if(GITHUB_DEPLOYMENT) await flushCloudSave();
+        await flushCloudSave();
         await signOut();
         resetAnalytics();
         location.reload();
@@ -320,6 +323,15 @@ initCloudSave({
   },
 });
 document.addEventListener('click', e => {
+  if(e.target.closest('[data-email-auth]')){
+    openEmailSignIn({ close:modal.close, onSignedIn:user => {
+      session = { user };
+      modal.close(); renderAuth();
+      track('sign_in', { provider:'email' });
+      if(game) hud(game);
+      if($('#scr-create').classList.contains('on')) builder.refreshStatus();
+    } });
+  }
   const provider = STATIC_DEPLOYMENT ? null : e.target.closest('[data-auth-provider]');
   if(provider){
     provider.disabled = true;

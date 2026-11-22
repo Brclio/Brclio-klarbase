@@ -655,7 +655,11 @@ The browser interface defaults to Simplified Chinese. The language button in the
 
 ## 8. Server & API
 
-The public site uses Pages Functions for GitHub sign-in, saves, comments and online isles. Production settings and endpoints are documented in [DEPLOYMENT.md](DEPLOYMENT.md#online-services). Players send public feedback through [Brclio Issues](https://github.com/Brclio/Brclio-klarbase/issues) and private requests to [the maintainer](mailto:bornforthis@bornforthis.cn).
+The public site uses Pages Functions for email/password and GitHub sign-in, saves, comments and online isles. Production settings and endpoints are documented in [DEPLOYMENT.md](DEPLOYMENT.md#online-services). Players send public feedback through [Brclio Issues](https://github.com/Brclio/Brclio-klarbase/issues) and private requests to [the maintainer](mailto:bornforthis@bornforthis.cn).
+
+Email registration accepts a public display name, email address and a 10–128 character password at `POST /api/auth/sign-up/email`. Subsequent logins use `POST /api/auth/sign-in/email`. Both issue the same seven-day HTTP-only session as GitHub. The two methods have independent account IDs and saves. The email address identifies the account locally to Klarbase. Registration does not verify mailbox ownership or send recovery mail.
+
+Pages derives an opaque account ID from the normalized address with a keyed HMAC. The encrypted `users/<prefix>/<id>/credential.json` contains the scrypt scheme, salt and hash. Registration commits the credential, profile and session together. The existing internal Durable Object binding handles password derivation and temporarily limits attempts per account and IP. When handling deletion, remove the credential with the other records in that user's directory.
 
 ### Optional Node and PostgreSQL backend
 
@@ -663,7 +667,7 @@ The endpoint table, Prisma models and analytics options below describe the separ
 
 ```
 GET    /api/health
-*      /api/auth/*                         better-auth (GitHub, Google)
+*      /api/auth/*                         better-auth (email, GitHub, Google)
 GET    /api/puzzles?cursor&limit[&author=me]   public browse; adds isle/theme/par; author=me needs login
 GET    /api/puzzles/:hash                  public play; isle solution only for signed-in players
 POST   /api/puzzles   {title, puzzle}      login; isle publish gate: parse → solve (200k) → hash → dedup → store
@@ -727,7 +731,7 @@ GitHub name, quality, last provider) never sync.
 
 **What is stored, per person (keep `/privacy` in sync).** Anonymous: `localStorage` only (progress,
 settings, quality, draft, dailies, map position + explored chunks, effort, GitHub name, last provider) + anonymous `IslePlay` sums. Signed in: better-auth
-`User` (name, email, avatar), `Account` (provider link + OAuth tokens), `Session` (cookie token,
+`User` (name, email, avatar), `Account` (salted password hash for email or OAuth provider link and tokens), `Session` (cookie token,
 **ipAddress, userAgent**), plus their `Puzzle`, `Report`, `Plot`, `Feedback`, `Comment`, `CommentReport`, `Progress` rows — all cascade
 from `User`. The service uses a sign-in session cookie and a short-lived OAuth state cookie. **Analytics (2026-11-18):** cookieless PostHog EU via `/ingest`
 (`client/src/analytics.js`): `persistence:'memory'`, only the fixed `EVENTS` list with allow-listed props, off when `VITE_POSTHOG_KEY` is unset, when
@@ -748,10 +752,10 @@ anonymously per isle in `IslePlay` (above).
 **Brclio edition.** Cloudflare Pages project `brclio-klarbase` serves [klarbase.brclio.com](https://klarbase.brclio.com).
 The GitHub integration deploys pushes to `Brclio/Brclio-klarbase`'s `main` branch, including PR merges.
 Preview builds are disabled. Pages runs `npm run build:pages` from the monorepo root with Node 22 and publishes `client/dist` after the API, verifier and storage checks pass.
-`VITE_GITHUB_DEPLOYMENT=true` enables GitHub OAuth and online features through Pages Functions.
-A repository-scoped GitHub App writes encrypted profile, session, progress, puzzle, and comment records to the private Brclio data repository.
+`VITE_GITHUB_DEPLOYMENT=true` enables email accounts, GitHub OAuth and online features through Pages Functions.
+A repository-scoped GitHub App writes encrypted credential, profile, session, progress, puzzle, and comment records to the private Brclio data repository.
 The backend merges saves with `@klar/core` under a Git ref compare-and-swap retry. The browser separates guest progress from each account.
-The internal `brclio-klarbase-verifier` Worker uses a SQLite-backed Durable Object to run the 200k-state solver and difficulty audit with no persistent data.
+The internal `brclio-klarbase-verifier` Worker runs the 200k-state solver and difficulty audit. Email authentication uses separate Durable Object instances in the same Worker for password derivation and short-lived attempt counters.
 Workers Builds deploys the verifier from the same production branch. Both services run on Cloudflare Free.
 See [`DEPLOYMENT.md`](DEPLOYMENT.md#brclio-production) for project settings and rollback.
 
@@ -819,6 +823,11 @@ cozy hazards, no gore; gust vents; anonymous per-isle stats; staged execution).
 ## 13. Session Log
 
 > Newest first. Sessions (a)–(k) of 2026-08-19 are in `docs/archive/v1/ENGINEERING-v1.md`.
+
+### 2026-11-22 — Email accounts and cloud saves
+
+- Add email registration and sign-in to the bilingual account dialog. Players can use the existing cloud save, sharing and comment features with a public nickname.
+- Reuse the Pages session and per-account progress formats. The optional Express service stores email credentials in its existing better-auth tables and keeps separate device caches for these accounts.
 
 ### 2026-11-22 — Brclio identity and operator contacts
 

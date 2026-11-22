@@ -4,7 +4,9 @@ let account = null;
 
 export function accountForProgress(session) {
   const id = session?.user?.id;
-  return GITHUB_DEPLOYMENT && typeof id === 'string' && /^[0-9a-f]{64}$/.test(id) ? id : null;
+  // Existing Express OAuth users retain their original unscoped progress cache.
+  const scopedId = GITHUB_DEPLOYMENT ? /^[0-9a-f]{64}$/ : /^email_[0-9a-f]{32}$/;
+  return typeof id === 'string' && scopedId.test(id) ? id : null;
 }
 
 export function selectProgressAccount(id) { account = id; }

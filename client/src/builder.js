@@ -419,9 +419,10 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
     if(e.key === 'r' || e.key === 'R'){ rampDir = (rampDir + 1) % 4; tool = 'ramp'; syncTools(); }
   });
   addEventListener('resize', () => draw());
+  const refreshStatus = () => { if(statusCaption) $('#bStatus').textContent = statusCaption(); };
   const refreshLanguage = () => {
     for(const update of captions) update();
-    if(statusCaption) $('#bStatus').textContent = statusCaption();
+    refreshStatus();
     if(contributionCaption) $('#bGithubNote').innerHTML = contributionCaption();
     if(thumbTheme !== null) refreshThumbs();
     showDifficulty(); syncStoreys();
@@ -431,6 +432,7 @@ export function mountBuilder({ world, onTest, api, getSession, toast, repoUrl, c
 
   return {
     show(){ changed(); queueThumbs(); },
+    refreshStatus,
     get draft(){ return draft; },
   };
 }

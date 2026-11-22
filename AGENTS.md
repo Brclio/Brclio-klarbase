@@ -25,7 +25,7 @@ core/src/isle/   format.js (parse, hash) · rules.js (step) · solve.js (BFS) ·
 core/src/*.js    legacy voxel engine — only for the deferred world API
 core/test/       isles.mjs · run.mjs
 client/src/      main.js (app) · builder.js · game/{world,props,pip,session,audio,themes}.js
-functions/       production Pages API · GitHub sign-in · encrypted per-record repository storage
+functions/       production Pages API · email and GitHub sign-in · encrypted per-record repository storage
 cloudflare/      verifier.js (internal Durable Object) · wrangler.toml
 server/src/      shared validation and optional Express/PostgreSQL service
 isles/community/ <github-user>/<id>.json — bundled into the client

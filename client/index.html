@@ -249,6 +249,20 @@
   @keyframes pop{ from{ transform:scale(0) rotate(-30deg); } to{ transform:scale(1) rotate(0); } }
   .modal .row{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
   .modal .facts{ color:var(--ink-2); font-weight:800; }
+  .auth-panel{ position:relative; }
+  .auth-panel h2{ padding:0 28px; }
+  .auth-panel h2:focus{ outline:none; }
+  .auth-panel .auth-close{ position:absolute; top:-4px; right:-6px; width:36px; height:36px; border-radius:50%; font-size:24px; }
+  .auth-panel .auth-close:hover{ background:var(--glass-2); }
+  .auth-panel form{ display:grid; gap:12px; margin-top:18px; text-align:left; }
+  .auth-panel .field input{ min-width:0; width:100%; font-size:16px; }
+  .auth-panel .field small, .auth-panel .auth-terms{ color:var(--ink-2); font-size:12px; }
+  .auth-panel .btn{ justify-content:center; }
+  .auth-panel .auth-switch{ margin-top:10px; padding:6px; text-decoration:underline; font-weight:700; }
+  .auth-panel .auth-error{ margin:0; color:#972c36; font-size:14px; font-weight:700; }
+  .auth-panel .auth-error:empty{ display:none; }
+  .auth-panel .auth-terms{ margin:10px 0 0; }
+  .auth-panel a{ color:inherit; }
   .rules{ text-align:left; display:grid; gap:9px; margin:14px 0 4px; font-size:14.5px; font-weight:600; color:var(--ink-2); }
   .rules div{ display:flex; gap:10px; align-items:flex-start; }
   .rules .ico{ flex:0 0 28px; height:28px; border-radius:9px; display:grid; place-items:center; background:rgba(42,34,56,.07); font-size:15px; }

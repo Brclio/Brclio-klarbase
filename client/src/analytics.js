@@ -10,8 +10,6 @@
 //     exception capture are all off. The ONLY events sent are the fixed list below, each
 //     with a fixed list of properties — anything else is dropped before it leaves track().
 //   - The list is also rendered on the privacy page, so what we say is what the code sends.
-import { BRCLIO_DEPLOYMENT } from './deployment.js';
-
 const FLAG = 'klarbase.v2.analytics';
 
 // name -> { about (shown on /privacy), props: allowed property names }
@@ -61,7 +59,7 @@ let ph = null, starting = false, enabled = false, queue = [], whoami = null;
 const read = () => { try { return localStorage.getItem(FLAG); } catch { return null; } };
 const write = on => { try { on ? localStorage.removeItem(FLAG) : localStorage.setItem(FLAG, 'off'); } catch {} };
 const signal = () => navigator.doNotTrack === '1' || !!navigator.globalPrivacyControl;
-const configured = () => !BRCLIO_DEPLOYMENT && !!import.meta.env.VITE_POSTHOG_KEY;
+const configured = () => !!import.meta.env.VITE_POSTHOG_KEY;
 
 // 'on' | 'off' (you turned it off) | 'dnt' (your browser asks not to be tracked) | 'unconfigured' (this build sends nothing)
 export function analyticsState(){

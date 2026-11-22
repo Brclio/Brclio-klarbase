@@ -1,7 +1,7 @@
 // Shared bits of the legal pages. Everything that is not static text (the operator's
 // details come from build-time env vars) is escaped before it becomes HTML.
-export { REPO_URL as REPO } from '../deployment.js';
 export const UPDATED = '2026-11-18';
+export const REPO = 'https://github.com/TanmoyP/klarbase';
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
 const env = import.meta.env;

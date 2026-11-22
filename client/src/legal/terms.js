@@ -1,18 +1,10 @@
 // Terms of Use. Not legal advice; keep consistent with LICENSE / CONTRIBUTING.md and the privacy page.
-import { GITHUB_DEPLOYMENT, STATIC_DEPLOYMENT } from '../deployment.js';
 import { UPDATED, REPO, esc, contactLine, updatedLine, authoritative, otherPages } from './shared.js';
 
 export const title = 'Terms of Use';
 export const updated = UPDATED;
 
-export const html = () => GITHUB_DEPLOYMENT || STATIC_DEPLOYMENT ? `
-${updatedLine('2026-11-22')}
-<p>This game is provided as is under the <a href="${esc(REPO)}/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>. You can back up your isles using <i>JSON</i> in the builder.</p>
-<h3>Contributing isles</h3>
-<p>Propose isles you made or have the right to share. Isles accepted into the project are released under the MIT License and credited to their makers. See the <a href="${esc(REPO)}/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">contribution guide</a> for the format and review process.</p>
-${GITHUB_DEPLOYMENT ? `<h3>Sharing and comments</h3>
-<p>When you publish a shared isle, you release it under the MIT License. Klarbase displays your shared isles and comments along with your public profile information. Follow the <a href="/guidelines" data-go="/guidelines">community guidelines</a> and see <a href="/privacy" data-go="/privacy">Privacy</a> for how this edition stores data.</p>` : ''}
-${otherPages}` : `
+export const html = () => `
 ${updatedLine(UPDATED)}
 <p>These terms apply when you use Klarbase at klarbase.dev. Playing and building need no account; some features (sharing isles, comments, cloud progress) need you to sign in. By using Klarbase you agree to these terms.</p>
 

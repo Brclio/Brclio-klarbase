@@ -4,4 +4,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://klarbase.brclio.com/sitemap.xml
+Sitemap: https://klarbase.dev/sitemap.xml
